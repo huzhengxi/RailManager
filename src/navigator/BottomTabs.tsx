@@ -7,9 +7,9 @@ import Notification from '../pages/Notification';
 import Setting from '../pages/Setting';
 import {library} from '@fortawesome/fontawesome-svg-core';
 import {FontAwesomeIcon} from '@fortawesome/react-native-fontawesome';
-import {faBell, faList, faSliders} from '@fortawesome/free-solid-svg-icons';
+import {faBell, faList, faSliders, faArrowCircleRight} from '@fortawesome/free-solid-svg-icons';
 
-library.add(faBell, faList, faSliders)
+library.add(faBell, faList, faSliders, faArrowCircleRight)
 
 const Tab = createBottomTabNavigator();
 export default function BottomTabs() {
