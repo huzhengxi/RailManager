@@ -7,8 +7,10 @@ import {RoundView} from '../utils/lib';
 import {AppStyles} from '../utils/styls';
 import {useNotificationList} from '../utils/HttpUtil';
 import dayjs from 'dayjs';
+import {useTitle} from '../hooks/navigation-hooks';
 
 export default function Notification() {
+  useTitle('通知管理')
   const {loading, data, refresh} = useNotificationList();
   console.log('data:', data);
   return (

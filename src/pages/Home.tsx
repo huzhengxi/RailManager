@@ -10,9 +10,11 @@ import {AppColor, AppStyles} from '../utils/styls';
 import dayjs from 'dayjs';
 import {useNavigation} from '@react-navigation/native';
 import AppUtil from '../utils/AppUtil';
+import {useTitle} from '../hooks/navigation-hooks';
 
 
 export default function Home() {
+  useTitle('轨道管理系统')
   const {data, refresh, loading} = useDevice();
   const navigation = useNavigation();
   const renderItem: ListRenderItem<IDeviceItem> = ({index, item}) => {

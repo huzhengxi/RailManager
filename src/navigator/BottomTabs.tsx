@@ -17,7 +17,7 @@ export default function BottomTabs() {
     <Tab.Navigator>
       <Tab.Screen
         options={{
-          headerShown:false,
+          headerShown:true,
           tabBarLabel: '设备',
           tabBarIcon: ({color, size})=> (
             <FontAwesomeIcon icon={'list'} color={color} size={size} />
@@ -27,7 +27,7 @@ export default function BottomTabs() {
         component={Home}/>
       <Tab.Screen
         options={{
-          headerShown:false,
+          headerShown:true,
           tabBarLabel: '通知',
           tabBarIcon: ({color, size})=> (
             <FontAwesomeIcon icon={'bell'} color={color} size={size} />
