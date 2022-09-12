@@ -14,7 +14,7 @@ import {useTitle} from '../hooks/navigation-hooks';
 
 
 export default function Home() {
-  useTitle('轨道管理系统')
+  useTitle('轨道监测系统')
   const {data, refresh, loading} = useDevice();
   const navigation = useNavigation();
   const renderItem: ListRenderItem<IDeviceItem> = ({index, item}) => {

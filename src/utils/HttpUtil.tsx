@@ -175,6 +175,7 @@ const generateMockTempHisData = () => {
 const generateRailHisData = () => {
   const now = Date.now();
   const railHisList: IRailUsingHistory[] = [];
+  const shaftArray = [8, 16, 32, 63];
   for (let i = 0; i < 7; i++) {
     railHisList.push({
       type: 'date',
@@ -190,7 +191,7 @@ const generateRailHisData = () => {
       type: 'history',
       timestamp: now - i * ONE_DAY - Math.round(Math.random() * 4000) * 1000,
       using: true,
-      description: `轴数为${Math.round(Math.random() * 1000)}列车进站`
+      description: `轴数为[${shaftArray[Math.round(Math.random() * 3)]}]的列车进站`
     });
   }
 
