@@ -66,5 +66,6 @@ const useRouteParams: RouteParamsType = (params: string[]) => {
 
 export {
   useUpdateOptions,
-  useTitle
+  useTitle,
+  useRouteParams
 }

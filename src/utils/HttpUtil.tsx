@@ -2,7 +2,8 @@
  * Created by jason on 2022/9/12.
  */
 import {useCallback, useEffect, useState} from 'react';
-import {IDeviceItem, INotificationItem} from './types';
+import {IDeviceItem, INotificationItem, IRailUsingHistory, ITempHistory} from './types';
+import dayjs from 'dayjs';
 
 
 export const useNotificationList = () => {
@@ -103,4 +104,95 @@ export const useDevice = () => {
     data: list,
     refresh
   };
+};
+
+//一天的毫秒
+const ONE_DAY = 3600 * 1000 * 24;
+export const useTemperatureHistory = () => {
+  const [loading, setLoading] = useState(true);
+  const [list, setList] = useState<ITempHistory[]>([]);
+
+  const refresh = useCallback(() => {
+    setLoading(true);
+    setTimeout(() => {
+      setList(generateMockTempHisData());
+      setLoading(false);
+    }, 1000);
+  }, [list]);
+  useEffect(() => {
+    setTimeout(() => {
+      setList(generateMockTempHisData());
+      setLoading(false);
+    }, 2000);
+  }, []);
+  return {
+    loading,
+    data: list,
+    refresh
+  };
+};
+
+export const useRailUsingHistory = () => {
+  const [loading, setLoading] = useState(true);
+  const [list, setList] = useState<IRailUsingHistory[]>([]);
+
+  const refresh = useCallback(() => {
+    setLoading(true);
+    setTimeout(() => {
+      setList(generateRailHisData());
+      setLoading(false);
+    }, 1000);
+  }, []);
+  useEffect(() => {
+    setTimeout(() => {
+      setList(generateRailHisData());
+      setLoading(false);
+    }, 2000);
+  }, []);
+  return {
+    loading,
+    data: list,
+    refresh
+  };
+};
+
+
+const generateMockTempHisData = () => {
+  const now = Date.now();
+  const tempHisList: ITempHistory[] = [];
+
+  for (let i = 6; i >= 0; i--) {
+    tempHisList.push({
+      temp: Math.random() * 200 - 50,
+      timestamp: now - i * ONE_DAY
+    });
+  }
+
+  return tempHisList;
+};
+
+
+const generateRailHisData = () => {
+  const now = Date.now();
+  const railHisList: IRailUsingHistory[] = [];
+  for (let i = 0; i < 7; i++) {
+    railHisList.push({
+      type: 'date',
+      timestamp: now - i * ONE_DAY
+    });
+    railHisList.push({
+      type: 'history',
+      using: false,
+      timestamp: now - i * ONE_DAY,
+      description: `列车驶离，轨道空闲`
+    });
+    railHisList.push({
+      type: 'history',
+      timestamp: now - i * ONE_DAY - Math.round(Math.random() * 4000) * 1000,
+      using: true,
+      description: `轴数为${Math.round(Math.random() * 1000)}列车进站`
+    });
+  }
+
+  return railHisList;
 };
