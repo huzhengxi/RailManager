@@ -2,7 +2,17 @@
  * Created by jason on 2022/9/10.
  */
 
-import {FlatList, Image, ListRenderItem, SafeAreaView, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
+import {
+  FlatList,
+  Image,
+  ListRenderItem,
+  SafeAreaView,
+  Share,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View
+} from 'react-native';
 import {useDevice} from '../utils/HttpUtil';
 import {IDeviceItem, StatusProps} from '../utils/types';
 import {RoundView} from '../utils/lib';
@@ -22,6 +32,11 @@ export default function Home() {
         activeOpacity={.6}
         style={{marginRight: 15}}
         onPress={() => {
+          Share.share({
+            title: 'Share Title',
+            message:'Share Message'
+          })
+          return
           // @ts-ignore
           navigation1.navigate('/addDevice');
         }}
