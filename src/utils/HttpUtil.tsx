@@ -4,6 +4,7 @@
 import {useCallback, useEffect, useState} from 'react';
 import {IDeviceItem, INotificationItem, IRailUsingHistory, ITempHistory} from './types';
 import dayjs from 'dayjs';
+import Helper from './Helper';
 
 
 export const useNotificationList = () => {
@@ -112,6 +113,9 @@ export const useTemperatureHistory = () => {
   const [loading, setLoading] = useState(true);
   const [list, setList] = useState<ITempHistory[]>([]);
 
+  useEffect(()=> {
+    Helper.writeLog('温度历史：', list)
+  }, [list])
   const refresh = useCallback(() => {
     setLoading(true);
     setTimeout(() => {
@@ -135,6 +139,10 @@ export const useTemperatureHistory = () => {
 export const useRailUsingHistory = () => {
   const [loading, setLoading] = useState(true);
   const [list, setList] = useState<IRailUsingHistory[]>([]);
+
+  useEffect(()=> {
+    Helper.writeLog('轨道使用历史：', list)
+  }, [list])
 
   const refresh = useCallback(() => {
     setLoading(true);

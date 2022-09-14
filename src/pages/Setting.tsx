@@ -6,9 +6,16 @@ import {useTitle} from '../hooks/navigation-hooks';
 import {RoundView} from '../utils/lib';
 import {Icon} from '@ant-design/react-native';
 import {IconProp} from '@fortawesome/fontawesome-svg-core';
+import {useEffect} from 'react';
+import Helper from '../utils/Helper';
+import {useNavigation} from '@react-navigation/native';
 
 export default function Setting() {
   useTitle('设置');
+  const navigation = useNavigation();
+  useEffect(()=> {
+    Helper.writeLog('进入设置页面')
+  }, [])
   return (
     <ScrollView>
       <RoundView>
@@ -17,7 +24,8 @@ export default function Setting() {
           split={true}
           icon={require('../../assets/contact.png')}
           onPress={() => {
-            Alert.alert('', 'test');
+            // @ts-ignore
+            navigation.navigate('/AppLog')
           }}
         />
         <Item
@@ -48,7 +56,7 @@ interface ItemProps {
 const Item = (props: ItemProps) => {
   const {title, split = false, icon, onPress} = props;
   return (
-    <TouchableOpacity activeOpacity={.6} onPress={()=> Alert.alert(title, '敬请期待！')}>
+    <TouchableOpacity activeOpacity={.6} onPress={onPress}>
       <View style={styles.itemContainer}>
         <View style={styles.row}>
           <Image source={icon} style={{height: 20, width: 20, resizeMode: 'contain'}}/>
