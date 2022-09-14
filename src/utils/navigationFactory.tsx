@@ -20,7 +20,6 @@ export const NormalPage = {
 
 export function createStack(pages: typeof NormalPage) {
   return Object.entries(pages).map(([key, value]) => {
-    console.log('key:', key);
     return <Stack.Screen key={`page-${key}`} name={`/${key}`} component={value}
                          options={{headerBackTitleVisible: false}}/>;
   });
