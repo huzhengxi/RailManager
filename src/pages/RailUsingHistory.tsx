@@ -5,7 +5,7 @@ import {FlatList, Image, ListRenderItem, StyleSheet, Text, View} from 'react-nat
 import {IRailUsingHistory, RailUsingHistoryDateType} from '../utils/types';
 import {useRouteParams, useTitle} from '../hooks/navigation-hooks';
 import {Loading, RoundView} from '../utils/lib';
-import {AppColor, AppStyles} from '../utils/styls';
+import {AppColor, AppStyles} from '../utils/styles';
 import dayjs from 'dayjs';
 
 export default function RailUsingHistory() {

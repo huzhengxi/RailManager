@@ -16,7 +16,7 @@ import {
 import {useDevice} from '../utils/HttpUtil';
 import {IDeviceItem, StatusProps} from '../utils/types';
 import {RoundView} from '../utils/lib';
-import {AppColor, AppStyles} from '../utils/styls';
+import {AppColor, AppStyles} from '../utils/styles';
 import dayjs from 'dayjs';
 import {useNavigation} from '@react-navigation/native';
 import AppUtil from '../utils/AppUtil';
@@ -38,7 +38,7 @@ export default function Home() {
           })
           return
           // @ts-ignore
-          navigation1.navigate('/addDevice');
+          navigation1.navigate('/AddDevice');
         }}
       >
         <Image
@@ -67,7 +67,7 @@ export default function Home() {
 const DeviceItem = ({index, item, navigation}: { index: number, item: IDeviceItem, navigation: any }) => {
   const {name, status, isUse, deviceId, timestamp, temperature} = item;
   const onPress = () => {
-    navigation.navigate('/detail', {item});
+    navigation.navigate('/Detail', {item});
   };
   return (
     <TouchableOpacity activeOpacity={.6} onPress={onPress}>

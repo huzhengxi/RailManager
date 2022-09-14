@@ -13,7 +13,7 @@ import {
 } from 'react-native';
 import {useRouteParams, useTitle} from '../hooks/navigation-hooks';
 import {IDeviceItem, ITempHistory} from '../utils/types';
-import {AppColor, AppStyles} from '../utils/styls';
+import {AppColor, AppStyles} from '../utils/styles';
 import dayjs from 'dayjs';
 import {Loading, RoundView} from '../utils/lib';
 import AppUtil from '../utils/AppUtil';
@@ -50,7 +50,7 @@ export default function Detail() {
         activeOpacity={.6}
         onPress={() => {
           // @ts-ignore
-          navigation.navigate('/railHistory', {historyData: railUsingHistoryData});
+          navigation.navigate('/RailUsingHistory', {historyData: railUsingHistoryData});
         }}
       >
         <UsingHistory data={railUsingHistoryData.slice(0, 5)} loading={railUsingLoading} renderTitle={true}/>

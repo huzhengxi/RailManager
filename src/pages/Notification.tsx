@@ -4,7 +4,7 @@
 import {View, Text, StyleSheet, Image, FlatList, ListRenderItem, SafeAreaView, Alert} from 'react-native';
 import {INotificationItem} from '../utils/types';
 import {RoundView} from '../utils/lib';
-import {AppStyles} from '../utils/styls';
+import {AppStyles} from '../utils/styles';
 import {useNotificationList} from '../utils/HttpUtil';
 import dayjs from 'dayjs';
 import {useTitle} from '../hooks/navigation-hooks';

@@ -2,7 +2,7 @@
  * Created by jason on 2022/9/12.
  */
 import {DeviceStatus} from './types';
-import {AppColor} from './styls';
+import {AppColor} from './styles';
 
 /**
  * 获取轨道状态颜色  正常为绿色，异常为红色
