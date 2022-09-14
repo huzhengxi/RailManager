@@ -2,7 +2,7 @@
  * Created by jason on 2022/9/10.
  */
 
-import {FlatList, ListRenderItem, SafeAreaView, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
+import {FlatList, Image, ListRenderItem, SafeAreaView, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
 import {useDevice} from '../utils/HttpUtil';
 import {IDeviceItem, StatusProps} from '../utils/types';
 import {RoundView} from '../utils/lib';
@@ -10,11 +10,28 @@ import {AppColor, AppStyles} from '../utils/styls';
 import dayjs from 'dayjs';
 import {useNavigation} from '@react-navigation/native';
 import AppUtil from '../utils/AppUtil';
-import {useTitle} from '../hooks/navigation-hooks';
+import {useTitle, useUpdateOptions} from '../hooks/navigation-hooks';
 
 
 export default function Home() {
-  useTitle('轨道监测系统')
+  useTitle('轨道监测系统');
+  const navigation1 = useNavigation();
+  useUpdateOptions({
+    headerRight: () => {
+      return <TouchableOpacity
+        activeOpacity={.6}
+        style={{marginRight: 15}}
+        onPress={() => {
+          // @ts-ignore
+          navigation1.navigate('/addDevice');
+        }}
+      >
+        <Image
+          source={require('../../assets/add_green.png')}
+          style={{width: 30, height: 30, resizeMode: 'contain'}}/>
+      </TouchableOpacity>;
+    }
+  });
   const {data, refresh, loading} = useDevice();
   const navigation = useNavigation();
   const renderItem: ListRenderItem<IDeviceItem> = ({index, item}) => {
