@@ -1,0 +1,42 @@
+{
+  "env": {
+    "browser": true,
+    "es2021": true,
+    "node": true
+  },
+  "extends": [
+    "eslint-config-ali/typescript/react",
+    "prettier",
+    "plugin:prettier/recommended"
+  ],
+  "parser": "@typescript-eslint/parser",
+  "parserOptions": {
+    "ecmaVersion": "latest",
+    "sourceType": "module"
+  },
+  "plugins": [
+    "@typescript-eslint",
+    "prettier"
+  ],
+  "rules": {
+    "prettier/prettier": "warn",
+    "no-case-declarations": "off",
+    "no-constant-condition": "off",
+    "@typescript-eslint/ban-ts-comment": "off",
+    "no-empty": "off",
+    "no-nested-ternary": "warn",
+    "no-shadow": "warn",
+    "array-callback-return": "off",
+    "no-unused-vars": "warn",
+    "prefer-const": "warn",
+    "no-return-assign": "off",
+    "spaced-comment": "warn",
+    "react/no-unused-state": "warn",
+    "react/no-children-prop": "off",
+    "@typescript-eslint/no-require-imports": "off",
+    "react/no-unused-prop-types": "warn"
+  },
+  "globals": {
+    "__DEV__": true
+  }
+}
