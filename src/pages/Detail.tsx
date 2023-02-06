@@ -16,8 +16,8 @@ import {IDeviceItem, ITempHistory} from '../utils/types';
 import {AppColor, AppStyles} from '../utils/styles';
 import dayjs from 'dayjs';
 import {Loading, RoundView} from '../utils/lib';
-import AppUtil from '../utils/AppUtil';
-import {useRailUsingHistory, useTemperatureHistory} from '../utils/HttpUtil';
+import AppUtil from '../utils/appUtil';
+import {useRailUsingHistory, useTemperatureHistory} from '../utils/httpUtil';
 import {LineChart} from 'react-native-chart-kit';
 import {UsingHistory} from './RailUsingHistory';
 import {useNavigation} from '@react-navigation/native';
@@ -33,7 +33,7 @@ export default function Detail() {
   useTitle(item.name || '');
   // @ts-ignore
   return (
-    <ScrollView style={{flex: 1}}>
+    <ScrollView style={{flex: 1}} >
       {/*更新时间*/}
       <View style={[AppStyles.row, {justifyContent: 'flex-end', paddingRight: 20, marginTop: 15}]}>
         <Text style={AppStyles.grayText}>{dayjs(timestamp).format('M/DD HH:mm')}</Text>

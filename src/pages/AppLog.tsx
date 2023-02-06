@@ -6,7 +6,7 @@ import {Image, SafeAreaView, ScrollView, Text, TouchableOpacity, View} from 'rea
 import {AppStyles} from '../utils/styles';
 import {useEffect, useState} from 'react';
 import {Loading} from '../utils/lib';
-import Helper, {LOG_FILE} from '../utils/Helper';
+import Helper, {LOG_FILE} from '../utils/helper';
 import RNShare from 'react-native-share';
 
 export default function AppLog() {

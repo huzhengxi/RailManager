@@ -3,8 +3,7 @@
  */
 import {useCallback, useEffect, useState} from 'react';
 import {IDeviceItem, INotificationItem, IRailUsingHistory, ITempHistory} from './types';
-import dayjs from 'dayjs';
-import Helper from './Helper';
+import Helper from './helper';
 
 
 export const useNotificationList = () => {

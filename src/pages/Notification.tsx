@@ -1,18 +1,17 @@
 /**
  * Created by jason on 2022/9/10.
  */
-import {View, Text, StyleSheet, Image, FlatList, ListRenderItem, SafeAreaView, Alert} from 'react-native';
+import {View, Text, StyleSheet, Image, FlatList, ListRenderItem, SafeAreaView, Alert, Button} from 'react-native';
 import {INotificationItem} from '../utils/types';
 import {RoundView} from '../utils/lib';
 import {AppStyles} from '../utils/styles';
-import {useNotificationList} from '../utils/HttpUtil';
+import {useNotificationList} from '../utils/httpUtil';
 import dayjs from 'dayjs';
 import {useTitle} from '../hooks/navigation-hooks';
 
 export default function Notification() {
   useTitle('通知管理')
   const {loading, data, refresh} = useNotificationList();
-  console.log('data:', data);
   return (
     <SafeAreaView style={{flex: 1}}>
       <FlatList

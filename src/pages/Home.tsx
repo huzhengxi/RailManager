@@ -3,14 +3,15 @@
  */
 
 import {FlatList, Image, ListRenderItem, SafeAreaView, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
-import {useDevice} from '../utils/HttpUtil';
+import {useDevice} from '../utils/httpUtil';
 import {IDeviceItem, StatusProps} from '../utils/types';
 import {RoundView} from '../utils/lib';
 import {AppColor, AppStyles} from '../utils/styles';
 import dayjs from 'dayjs';
 import {useNavigation} from '@react-navigation/native';
-import AppUtil from '../utils/AppUtil';
+import AppUtil from '../utils/appUtil';
 import {useTitle, useUpdateOptions} from '../hooks/navigation-hooks';
+import {useAppSelector} from '../store';
 
 export default function Home() {
   useTitle('轨道监测系统');
@@ -33,15 +34,16 @@ export default function Home() {
   });
   const {data, refresh, loading} = useDevice();
   const navigation = useNavigation();
+  const devices = useAppSelector(state => state.deviceReducer)
   const renderItem: ListRenderItem<IDeviceItem> = ({index, item}) => {
     return <DeviceItem item={item} index={index} navigation={navigation}/>;
   };
   return (
     <SafeAreaView style={{flex: 1}}>
       <FlatList
-        refreshing={loading}
-        onRefresh={refresh}
-        data={data}
+        refreshing={false}
+        onRefresh={()=> {}}
+        data={devices}
         renderItem={renderItem}
       />
     </SafeAreaView>
