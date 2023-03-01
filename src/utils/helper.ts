@@ -20,11 +20,12 @@ const SIZE_1M = 1024 * 1024; //1M
 RNFS.mkdir(LOG_DIR);
 
 function writeLog(...arg: any) {
-  const content = `[${getCurTime()}] ${[...arg].map((a) => (typeof a === 'object' ? JSON.stringify(a) : a)).join(',')}\n`;
-  RNFS.appendFile(LOG_FILE, content, 'utf8')
-    .catch(error => {
-      console.log('写日志失败：', error);
-    });
+  const content = `[${getCurTime()}] ${[...arg]
+    .map((a) => (typeof a === 'object' ? JSON.stringify(a) : a))
+    .join(',')}\n`;
+  RNFS.appendFile(LOG_FILE, content, 'utf8').catch((error) => {
+    console.log('写日志失败：', error);
+  });
 }
 
 async function readLog() {
@@ -36,24 +37,25 @@ async function readLog() {
     console.log('读取文件错误：', e?.message);
     return {
       file,
-      error: e?.message
+      error: e?.message,
     };
   }
 }
 
 function clearLog() {
-  RNFS.readDir(LOG_DIR).then(result => {
-    return result.filter(file => file.isFile() && file.size > SIZE_1M * 4);
-  }).then(result => {
-    result.forEach(file => {
-      RNFS.unlink(file.path);
+  RNFS.readDir(LOG_DIR)
+    .then((result) => {
+      return result.filter((file) => file.isFile() && file.size > SIZE_1M * 4);
+    })
+    .then((result) => {
+      result.forEach((file) => {
+        RNFS.unlink(file.path);
+      });
     });
-  });
 }
-
 
 export default {
   writeLog,
   readLog,
-  clearLog
+  clearLog,
 };

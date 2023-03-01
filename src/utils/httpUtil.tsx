@@ -5,7 +5,6 @@ import {useCallback, useEffect, useState} from 'react';
 import {IDeviceItem, INotificationItem, IRailUsingHistory, ITempHistory} from './types';
 import Helper from './helper';
 
-
 export const useNotificationList = () => {
   const [loading, setLoading] = useState(true);
   const [list, setList] = useState<INotificationItem[]>([]);
@@ -27,22 +26,22 @@ export const useNotificationList = () => {
           railName: '1#轨道',
           description: '1#轨道断轨',
           timestamp: new Date().setTime(now),
-          unRead: false
+          unRead: false,
         },
         {
           rainId: 1,
           railName: '2#轨道',
           description: '2#轨道恢复正常',
           timestamp: new Date().setTime(now - 1000 * 360),
-          unRead: true
+          unRead: true,
         },
         {
           rainId: 2,
           railName: '2#轨道',
           description: '2#轨道被占用',
           timestamp: new Date().setTime(now - 1000 * 720),
-          unRead: false
-        }
+          unRead: false,
+        },
       ]);
       setLoading(false);
     }, 2000);
@@ -50,10 +49,9 @@ export const useNotificationList = () => {
   return {
     loading,
     data: list,
-    refresh
+    refresh,
   };
 };
-
 
 export const useDevice = () => {
   const [loading, setLoading] = useState(true);
@@ -77,7 +75,7 @@ export const useDevice = () => {
           status: 'normal',
           timestamp: new Date().setTime(now),
           isUse: false,
-          temperature: 45
+          temperature: 45,
         },
         {
           deviceId: 0,
@@ -85,7 +83,7 @@ export const useDevice = () => {
           status: 'normal',
           timestamp: new Date().setTime(now),
           isUse: true,
-          temperature: 140
+          temperature: 140,
         },
         {
           deviceId: 0,
@@ -93,8 +91,8 @@ export const useDevice = () => {
           status: 'abnormal',
           timestamp: new Date().setTime(now),
           isUse: false,
-          temperature: -5
-        }
+          temperature: -5,
+        },
       ]);
       setLoading(false);
     }, 2000);
@@ -102,19 +100,19 @@ export const useDevice = () => {
   return {
     loading,
     data: list,
-    refresh
+    refresh,
   };
 };
 
-//一天的毫秒
+// 一天的毫秒
 const ONE_DAY = 3600 * 1000 * 24;
 export const useTemperatureHistory = () => {
   const [loading, setLoading] = useState(true);
   const [list, setList] = useState<ITempHistory[]>([]);
 
-  useEffect(()=> {
-    Helper.writeLog('温度历史：', list)
-  }, [list])
+  useEffect(() => {
+    Helper.writeLog('温度历史：', list);
+  }, [list]);
   const refresh = useCallback(() => {
     setLoading(true);
     setTimeout(() => {
@@ -131,7 +129,7 @@ export const useTemperatureHistory = () => {
   return {
     loading,
     data: list,
-    refresh
+    refresh,
   };
 };
 
@@ -139,9 +137,9 @@ export const useRailUsingHistory = () => {
   const [loading, setLoading] = useState(true);
   const [list, setList] = useState<IRailUsingHistory[]>([]);
 
-  useEffect(()=> {
-    Helper.writeLog('轨道使用历史：', list)
-  }, [list])
+  useEffect(() => {
+    Helper.writeLog('轨道使用历史：', list);
+  }, [list]);
 
   const refresh = useCallback(() => {
     setLoading(true);
@@ -159,10 +157,9 @@ export const useRailUsingHistory = () => {
   return {
     loading,
     data: list,
-    refresh
+    refresh,
   };
 };
-
 
 const generateMockTempHisData = () => {
   const now = Date.now();
@@ -171,13 +168,12 @@ const generateMockTempHisData = () => {
   for (let i = 6; i >= 0; i--) {
     tempHisList.push({
       temp: Math.random() * 200 - 50,
-      timestamp: now - i * ONE_DAY
+      timestamp: now - i * ONE_DAY,
     });
   }
 
   return tempHisList;
 };
-
 
 const generateRailHisData = () => {
   const now = Date.now();
@@ -186,19 +182,19 @@ const generateRailHisData = () => {
   for (let i = 0; i < 7; i++) {
     railHisList.push({
       type: 'date',
-      timestamp: now - i * ONE_DAY
+      timestamp: now - i * ONE_DAY,
     });
     railHisList.push({
       type: 'history',
       using: false,
       timestamp: now - i * ONE_DAY,
-      description: `列车驶离，轨道空闲`
+      description: `列车驶离，轨道空闲`,
     });
     railHisList.push({
       type: 'history',
       timestamp: now - i * ONE_DAY - Math.round(Math.random() * 4000) * 1000,
       using: true,
-      description: `轴数为 ${shaftArray[Math.round(Math.random() * 3)]} 的列车进站`
+      description: `轴数为 ${shaftArray[Math.round(Math.random() * 3)]} 的列车进站`,
     });
   }
 

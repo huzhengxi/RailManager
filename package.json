@@ -23,6 +23,9 @@
     "@react-navigation/native": "^6.0.12",
     "@react-navigation/native-stack": "^6.8.0",
     "@reduxjs/toolkit": "^1.8.5",
+    "alibabacloud-iot-device-sdk": "^1.2.8",
+    "axios": "^1.3.4",
+    "crypto": "^1.0.1",
     "dayjs": "^1.11.5",
     "expo": "~46.0.9",
     "expo-splash-screen": "~0.16.2",
@@ -41,7 +44,8 @@
     "react-native-share": "^7.9.0",
     "react-native-svg": "^13.1.0",
     "react-native-web": "~0.18.7",
-    "react-redux": "^8.0.2"
+    "react-redux": "^8.0.2",
+    "redux-persist": "^6.0.0"
   },
   "devDependencies": {
     "@babel/core": "^7.12.9",
