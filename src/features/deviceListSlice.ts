@@ -1,9 +1,10 @@
 /**
  * Created by jason on 2022/9/22.
  */
-import {createSlice} from '@reduxjs/toolkit';
+import {createSlice, PayloadAction} from '@reduxjs/toolkit';
 import {IDeviceItem} from '../utils/types';
 import {RootState} from '../store';
+import {Alert} from "react-native";
 
 const now = Date.now();
 
@@ -17,7 +18,7 @@ const initialState: IDeviceItem[] = [
     temperature: 45
   },
   {
-    deviceId: 0,
+    deviceId: 1,
     name: '2#轨道1',
     status: 'normal',
     timestamp: new Date().setTime(now),
@@ -25,7 +26,7 @@ const initialState: IDeviceItem[] = [
     temperature: 140
   },
   {
-    deviceId: 0,
+    deviceId: 2,
     name: '3#轨道',
     status: 'abnormal',
     timestamp: new Date().setTime(now),
@@ -39,12 +40,21 @@ export const deviceListSlice = createSlice({
   name: 'deviceList',
   initialState,
   reducers: {
-    remove: (state, item) => {
+    removeDevice: (devices: IDeviceItem[], payload:PayloadAction<IDeviceItem>) => {
+      const removeItemIndex = devices.findIndex(device=> device.deviceId === payload.payload.deviceId)
+      if(removeItemIndex !== -1){
+        devices.splice(removeItemIndex, 1)
+      }else {
+        Alert.alert('删除失败', '设备不存在')
+      }
+    },
+    addDevice: (devices:IDeviceItem[], payload: PayloadAction<IDeviceItem>)  => {
+      devices.push(payload.payload)
     }
-  }
+  },
 })
 
-export const {remove} = deviceListSlice.actions
+export const {removeDevice, addDevice} = deviceListSlice.actions
 
 // export const selectDevice = (state:RootState) => state.
 

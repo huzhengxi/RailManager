@@ -10,12 +10,13 @@ import {AppColor, AppStyles} from '../utils/styles';
 import dayjs from 'dayjs';
 import {useNavigation} from '@react-navigation/native';
 import {useTitle, useUpdateOptions} from '../hooks/navigation-hooks';
-import {useAppSelector} from '../store';
+import {useAppDispatch, useAppSelector} from '../store';
 import AppUtil from '../utils/AppUtil';
 
 export default function Home() {
   useTitle('轨道监测系统');
   const navigation1 = useNavigation();
+  const  dispatch = useAppDispatch()
   useUpdateOptions({
     headerRight: () => {
       return (
@@ -34,21 +35,20 @@ export default function Home() {
       );
     },
   });
-  const {data, refresh, loading} = useDevice();
   const navigation = useNavigation();
   const devices = useAppSelector((state) => state.deviceReducer);
   const renderItem: ListRenderItem<IDeviceItem> = ({index, item}) => {
-    return <DeviceItem item={item} index={index} navigation={navigation} />;
+    return <DeviceItem item={item} index={index} navigation={navigation}/>;
   };
   return (
     <SafeAreaView style={{flex: 1}}>
-      <FlatList refreshing={false} onRefresh={() => {}} data={devices} renderItem={renderItem} />
+      <FlatList refreshing={false} onRefresh={() => {}} data={devices} renderItem={renderItem}/>
     </SafeAreaView>
   );
 }
 
-const DeviceItem = ({index, item, navigation}: {index: number; item: IDeviceItem; navigation: any}) => {
-  const {name, status, isUse, timestamp, temperature} = item;
+const DeviceItem = ({index, item, navigation}: { index: number; item: IDeviceItem; navigation: any }) => {
+  const {name, status, isUse, timestamp , temperature } = item;
   const onPress = () => {
     navigation.navigate('/Detail', {item});
   };
@@ -64,12 +64,12 @@ const DeviceItem = ({index, item, navigation}: {index: number; item: IDeviceItem
 
           {/* 各种状态 */}
           <View style={[AppStyles.row, {justifyContent: 'space-between', marginTop: 15, width: '100%'}]}>
-            <Status title={'状态：'} text={status === 'normal' ? '良好' : '断轨'} status={status} />
-            <Status title={'是否占用：'} text={isUse ? '占用' : '未占用'} status={isUse ? 'abnormal' : 'normal'} />
+            <Status title={'状态：'} text={status === 'normal' ? '良好' : '断轨'} status={status}/>
+            <Status title={'是否占用：'} text={isUse ? '占用' : '未占用'} status={isUse ? 'abnormal' : 'normal'}/>
           </View>
 
           {/* 温度 */}
-          <Temperature temp={temperature} />
+          <Temperature temp={temperature}/>
         </View>
       </RoundView>
     </TouchableOpacity>
@@ -89,7 +89,10 @@ const Status = ({text, status, title}: StatusProps) => (
 const MAX_TEMP = 150;
 const MIN_TEMP = -50;
 const RANGE = MAX_TEMP - MIN_TEMP;
-const Temperature = ({temp}: {temp: number}) => {
+const Temperature = ({temp}: { temp: number | undefined }) => {
+  if(temp === undefined) {
+    return  null
+  }
   let width = Math.round(((temp - MIN_TEMP) / RANGE) * 100);
   if (width < 15) {
     width = 10;

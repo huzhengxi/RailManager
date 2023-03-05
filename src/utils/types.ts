@@ -29,13 +29,13 @@ export interface IDeviceItem {
   /**轨道名称 */
   name: string;
   /**数据更新时间 */
-  timestamp: number;
+  timestamp?: number;
   /**状态：良好、断轨 */
-  status: DeviceStatus;
+  status?: DeviceStatus;
   /**轨道温度 */
-  temperature: number;
+  temperature?: number;
   /**轨道是否占用 */
-  isUse: boolean;
+  isUse?: boolean;
 }
 
 /**
@@ -47,7 +47,7 @@ export interface StatusProps {
   /**状态值 */
   text: string;
   /**状态 */
-  status: DeviceStatus;
+  status?: DeviceStatus;
 }
 
 /**
