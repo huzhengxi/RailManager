@@ -3,8 +3,8 @@ import querystring from 'querystring';
 import axios, {AxiosInstance} from 'axios';
 
 // TODO
-export const AccessKey = '';
-export const AccessKeySecret = '';
+export const AccessKey = 'LTAI5t7Zvibao5xtT6Lp8Nbj';
+export const AccessKeySecret = 'cweG5e47ccss8lpGPmhnoNm0X7qcgg';
 
 export interface IAliApiConfig {
   accessKeyId: string;
@@ -47,7 +47,7 @@ export class AliIoTAPIClient {
     return response.data;
   }
 
-  buildRequestURL(params: Record<string, any>) {
+  private buildRequestURL(params: Record<string, any>) {
     params.SignatureMethod = 'HMAC-SHA1';
     params.SignatureNonce = String(Date.now() + Math.floor(Math.random() * 1000));
     params.SignatureVersion = '1.0';

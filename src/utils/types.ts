@@ -7,7 +7,7 @@
  */
 export interface INotificationItem {
   /**轨道id */
-  readonly rainId: number,
+  readonly rainId: number;
   /**轨道名称 */
   railName: string;
   /**通知时间 */
@@ -15,17 +15,17 @@ export interface INotificationItem {
   /**通知内容 */
   description: string;
   /**是否已读 */
-  unRead: boolean
+  unRead: boolean;
 }
 
 /**
  * 设备定义
  */
-export type DeviceStatus = 'normal' | 'abnormal'
+export type DeviceStatus = 'normal' | 'abnormal';
 
 export interface IDeviceItem {
   /**id */
-  readonly  deviceId: number;
+  readonly deviceId: number;
   /**轨道名称 */
   name: string;
   /**数据更新时间 */
@@ -58,7 +58,6 @@ export interface ITempHistory {
   timestamp: number;
   temp: number;
 }
-
 
 /**
  * 轨道占用历史数据定义

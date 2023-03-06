@@ -1,25 +1,25 @@
 /**
  * Created by jason on 2022/9/10.
  */
-import {View, Text, StyleSheet, Image, FlatList, ListRenderItem, SafeAreaView, Alert, Button} from 'react-native';
-import {INotificationItem} from '../utils/types';
+import dayjs from 'dayjs';
+import {FlatList, Image, ListRenderItem, SafeAreaView, StyleSheet, Text, View} from 'react-native';
+import {useTitle} from '../hooks/navigation-hooks';
+import {useNotificationList} from '../utils/httpUtil';
 import {RoundView} from '../utils/lib';
 import {AppStyles} from '../utils/styles';
-import {useNotificationList} from '../utils/httpUtil';
-import dayjs from 'dayjs';
-import {useTitle} from '../hooks/navigation-hooks';
+import {INotificationItem} from '../utils/types';
 
 export default function Notification() {
-  useTitle('通知管理')
+  useTitle('通知管理');
   const {loading, data, refresh} = useNotificationList();
   return (
     <SafeAreaView style={{flex: 1}}>
       <FlatList
         refreshing={loading}
-        onRefresh={refresh }
+        onRefresh={refresh}
         data={data}
         renderItem={renderItem}
-        keyExtractor={item => `notification-keyExtractor-${item.rainId}`}
+        keyExtractor={(item) => `notification-keyExtractor-${item.rainId}`}
       />
     </SafeAreaView>
   );
@@ -28,20 +28,18 @@ export default function Notification() {
 const renderItem: ListRenderItem<INotificationItem> = ({index, item}) => {
   const {railName, timestamp, description, unRead} = item;
 
-  return <RoundView key={`notification-item-${index}`}>
-    {
-      unRead && <View style={styles.unRead}/>
-    }
-    <View style={[AppStyles.row, styles.itemContainer]}>
-      <View style={AppStyles.row}>
-        <Image style={styles.itemIcon} source={require('../../assets/trrail.png')}/>
-        <Text style={[AppStyles.blackText, {marginLeft: 5}]}>
-          {description}
-        </Text>
+  return (
+    <RoundView key={`notification-item-${index}`}>
+      {unRead && <View style={styles.unRead} />}
+      <View style={[AppStyles.row, styles.itemContainer]}>
+        <View style={AppStyles.row}>
+          <Image style={styles.itemIcon} source={require('../../assets/trrail.png')} />
+          <Text style={[AppStyles.blackText, {marginLeft: 5}]}>{description}</Text>
+        </View>
+        <Text style={AppStyles.grayText}>{dayjs(timestamp).format('M/DD HH:mm')}</Text>
       </View>
-      <Text style={AppStyles.grayText}>{dayjs(timestamp).format('M/DD HH:mm')}</Text>
-    </View>
-  </RoundView>;
+    </RoundView>
+  );
 };
 
 const styles = StyleSheet.create({
@@ -49,11 +47,11 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingRight: 15,
     height: 60,
-    width: '100%'
+    width: '100%',
   },
   itemIcon: {
     height: 20,
-    width: 20
+    width: 20,
   },
   unRead: {
     position: 'absolute',
@@ -62,6 +60,6 @@ const styles = StyleSheet.create({
     width: 4,
     borderRadius: 2,
     right: 10,
-    top: 10
-  }
+    top: 10,
+  },
 });
