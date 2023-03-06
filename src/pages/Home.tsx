@@ -11,12 +11,21 @@ import AppUtil from '../utils/AppUtil';
 import {RoundView} from '../utils/lib';
 import {AppColor, AppStyles} from '../utils/styles';
 import {IDeviceItem, StatusProps} from '../utils/types';
-import {addDevice, removeDevice} from '../features/deviceListSlice';
+import {addDevice, removeDevice, updateDevice} from '../features/deviceListSlice';
+import {useEffect} from 'react';
+import MqttClient from '../utils/mqttClient';
 
 export default function Home() {
   useTitle('轨道监测系统');
   const navigation = useNavigation();
   const dispatch = useAppDispatch();
+
+  useEffect(() => {
+    MqttClient.connect((deviceData) => {
+      dispatch(updateDevice(deviceData));
+    });
+  }, [dispatch]);
+
   useUpdateOptions({
     headerRight: () => {
       return (
@@ -28,7 +37,8 @@ export default function Home() {
             // navigation.navigate('/AddDevice');
             dispatch(
               addDevice({
-                deviceId: 0,
+                productKey: 'a1xjcOCd61A',
+                deviceId: '865714066701756',
                 name: '1#轨道',
                 status: 'normal',
                 timestamp: new Date().setTime(Date.now()),
@@ -62,6 +72,7 @@ export default function Home() {
 
 const DeviceItem = ({index, item, navigation}: {index: number; item: IDeviceItem; navigation: any}) => {
   const {name, status, isUse, timestamp, temperature} = item;
+  console.log('timestamp:', timestamp);
   const onPress = () => {
     navigation.navigate('/Detail', {item});
   };
@@ -78,7 +89,7 @@ const DeviceItem = ({index, item, navigation}: {index: number; item: IDeviceItem
           {/* 各种状态 */}
           <View style={[AppStyles.row, {justifyContent: 'space-between', marginTop: 15, width: '100%'}]}>
             <Status title={'状态：'} text={status === 'normal' ? '良好' : '断轨'} status={status} />
-            <Status title={'是否占用：'} text={isUse ? '占用' : '未占用'} status={isUse ? 'abnormal' : 'normal'} />
+            <Status title={'是否占用：'} text={isUse ? '占用' : '未占用'} status={isUse ? 'broken' : 'normal'} />
           </View>
 
           {/* 温度 */}
@@ -126,7 +137,7 @@ const Temperature = ({temp}: {temp: number | undefined}) => {
             paddingRight: 5,
           },
         ]}>
-        <Text style={{color: 'white', fontSize: 13}}>{temp}°</Text>
+        <Text style={{color: 'white', fontSize: 13}}>{temp.toFixed(1)}°</Text>
       </View>
     </View>
   );

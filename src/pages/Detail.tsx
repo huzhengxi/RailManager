@@ -61,8 +61,12 @@ const DeviceStatus = ({device}: {device: IDeviceItem}) => {
           backgroundColor={AppUtil.getDeviceStatusColor(status)}
         />
         {/* 是否占用 */}
-        <Item value={isUse ? '占用中' : '未占用'} backgroundColor={AppUtil.getDeviceUsingColor(isUse)} />
-        <Item value={`${temperature}°`} title={'温度'} backgroundColor={AppUtil.getTemperatureColor(temperature)} />
+        <Item value={isUse ? '占用中' : '未占用'} backgroundColor={AppUtil.getDeviceUsingColor(isUse || false)} />
+        <Item
+          value={`${temperature?.toFixed(1)}°`}
+          title={'温度'}
+          backgroundColor={AppUtil.getTemperatureColor(temperature ?? 0)}
+        />
       </View>
     </RoundView>
   );

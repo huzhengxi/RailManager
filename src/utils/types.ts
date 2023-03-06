@@ -21,13 +21,14 @@ export interface INotificationItem {
 /**
  * 设备定义
  */
-export type DeviceStatus = 'normal' | 'abnormal';
+export type DeviceStatus = 'normal' | 'broken' | 'busy';
 
 export interface IDeviceItem {
+  productKey: string;
   /**id */
-  readonly deviceId: number;
+  readonly deviceId: string;
   /**轨道名称 */
-  name: string;
+  readonly name: string;
   /**数据更新时间 */
   timestamp?: number;
   /**状态：良好、断轨 */
@@ -68,4 +69,37 @@ export interface IRailUsingHistory {
   using?: boolean;
   description?: string;
   type: RailUsingHistoryDateType;
+}
+
+/**
+ * mqtt 消息定义
+ */
+
+export interface MqttDeviceData {
+  requestId: string;
+  productKey: string;
+  deviceName: string;
+  items: {
+    railway_state: RailWayState;
+    train_state: TrainState;
+  };
+}
+
+export interface RailWayState {
+  time: number;
+  value: {
+    broken_state: DeviceStatus;
+    occupy_state: DeviceStatus;
+    temperature: number;
+    timestamp: number;
+  };
+}
+
+export interface TrainState {
+  time: number;
+  value: {
+    axis_number: number;
+    enter_or_exit: 'train_in' | 'train_out';
+    timestamp: number;
+  };
 }

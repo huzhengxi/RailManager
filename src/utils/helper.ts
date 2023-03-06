@@ -23,6 +23,10 @@ function writeLog(...arg: any) {
   const content = `[${getCurTime()}] ${[...arg]
     .map((a) => (typeof a === 'object' ? JSON.stringify(a) : a))
     .join(',')}\n`;
+  if (__DEV__) {
+    console.log(content);
+    return;
+  }
   RNFS.appendFile(LOG_FILE, content, 'utf8').catch((error) => {
     console.log('写日志失败：', error);
   });

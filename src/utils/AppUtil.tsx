@@ -8,8 +8,8 @@ import {AppColor} from './styles';
  * 获取轨道状态颜色  正常为绿色，异常为红色
  * @param status
  */
-const getDeviceStatusColor = (status: DeviceStatus) => {
-  if (status === 'abnormal') {
+const getDeviceStatusColor = (status?: DeviceStatus) => {
+  if (status === 'broken') {
     return AppColor.red;
   }
   return AppColor.green;
@@ -45,5 +45,5 @@ const getDeviceUsingColor = (isUsing: boolean) => {
 export default {
   getDeviceStatusColor,
   getTemperatureColor,
-  getDeviceUsingColor
+  getDeviceUsingColor,
 };

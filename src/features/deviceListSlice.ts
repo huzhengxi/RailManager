@@ -30,6 +30,7 @@ export const deviceListSlice = createSlice({
       }
     },
     updateDevice: (devices: IDeviceItem[], {payload: data}: PayloadAction<Partial<IDeviceItem>>) => {
+      console.log('更新数据：', devices, data);
       if (!data.deviceId) {
         return undefined;
       }
@@ -45,6 +46,6 @@ export const deviceListSlice = createSlice({
   },
 });
 
-export const {removeDevice, addDevice} = deviceListSlice.actions;
+export const {removeDevice, addDevice, updateDevice} = deviceListSlice.actions;
 
 export default deviceListSlice.reducer;

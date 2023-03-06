@@ -3,6 +3,10 @@
  */
 
 import helper from './helper';
+import {MqttDeviceData, IDeviceItem} from './types';
+
+// eslint-disable-next-line no-unused-vars
+type UpdateDataFunc = (data: IDeviceItem) => void;
 
 export default class MqttClient {
   private static productKey = 'a1GjE0EIQfA';
@@ -15,7 +19,7 @@ export default class MqttClient {
 
   private static isConnected = false;
 
-  static connect() {
+  static connect(updateData: UpdateDataFunc) {
     if (MqttClient.isConnected) {
       helper.writeLog('mqtt已经连接，直接返回');
       return;
@@ -28,6 +32,7 @@ export default class MqttClient {
       clientId: MqttClient.clientId,
     });
 
+    helper.writeLog('开始链接');
     client.on('connect', (mqtt: unknown) => {
       MqttClient.isConnected = true;
       helper.writeLog('mqtt 连接成功', mqtt);
@@ -43,6 +48,20 @@ export default class MqttClient {
 
     client.on('message', (topic: string, payload: any) => {
       helper.writeLog('接收到数据：', topic, payload.toString());
+      try {
+        const mqttData = JSON.parse(payload.toString()) as MqttDeviceData;
+        updateData({
+          deviceId: mqttData.deviceName,
+          name: mqttData.deviceName,
+          productKey: mqttData.productKey,
+          timestamp: mqttData.items.railway_state.value.timestamp,
+          status: mqttData.items.railway_state.value.broken_state,
+          temperature: mqttData.items.railway_state.value.temperature,
+          isUse: mqttData.items.railway_state.value.occupy_state === 'busy',
+        });
+      } catch (e: unknown) {
+        helper.writeLog('jason数据转换失败：', e, payload.toString());
+      }
     });
   }
 }
