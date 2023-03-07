@@ -11,16 +11,17 @@ import {INotificationItem} from '../utils/types';
 
 export default function Notification() {
   useTitle('通知管理');
-  const {loading, data, refresh} = useNotificationList();
+  // const {loading, data, refresh} = useNotificationList();
   return (
-    <SafeAreaView style={{flex: 1}}>
-      <FlatList
+    <SafeAreaView style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
+      <Text style={{fontSize: 20}}>敬请期待...</Text>
+      {/* <FlatList
         refreshing={loading}
         onRefresh={refresh}
         data={data}
         renderItem={renderItem}
         keyExtractor={(item) => `notification-keyExtractor-${item.rainId}`}
-      />
+      /> */}
     </SafeAreaView>
   );
 }

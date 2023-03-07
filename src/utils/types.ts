@@ -58,6 +58,7 @@ export interface StatusProps {
 export interface ITempHistory {
   timestamp: number;
   temp: number;
+  date: string;
 }
 
 /**
@@ -69,6 +70,7 @@ export interface IRailUsingHistory {
   using?: boolean;
   description?: string;
   type: RailUsingHistoryDateType;
+  date: string;
 }
 
 /**

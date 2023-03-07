@@ -1,12 +1,9 @@
 import crypto from 'react-native-quick-crypto';
 import querystring from 'querystring';
 import axios, {AxiosInstance} from 'axios';
+import {AccessKey, AccessKeySecret} from '../localconfig/config';
 
-// TODO
-export const AccessKey = 'LTAI5t7Zvibao5xtT6Lp8Nbj';
-export const AccessKeySecret = 'cweG5e47ccss8lpGPmhnoNm0X7qcgg';
-
-export interface IAliApiConfig {
+interface IAliApiConfig {
   accessKeyId: string;
   accessKeySecret: string;
   regionId: string;
@@ -14,22 +11,33 @@ export interface IAliApiConfig {
 }
 
 export class AliIoTAPIClient {
-  config: IAliApiConfig;
-  client: AxiosInstance;
+  private static instance: AliIoTAPIClient | undefined;
 
-  constructor(config: IAliApiConfig) {
-    this.config = config;
+  static getInstance() {
+    if (!this.instance) {
+      this.instance = new AliIoTAPIClient();
+    }
+    return this.instance;
+  }
+
+  private config: IAliApiConfig = {
+    accessKeyId: AccessKey,
+    accessKeySecret: AccessKeySecret,
+    regionId: 'cn-shanghai',
+    format: 'JSON',
+  };
+  private action = 'QueryDevicePropertyData';
+  private client: AxiosInstance;
+
+  private constructor() {
     this.client = axios.create({
-      baseURL: `https://iot.${config.regionId}.aliyuncs.com`,
+      baseURL: `https://iot.${this.config.regionId}.aliyuncs.com`,
     });
   }
 
-  async queryDeviceData(deviceId: string, productKey: string, startTime: number, endTime: number) {
-    const action = 'QueryDevicePropertyData';
-    const identifier = 'temperature'; // 查询的属性名称
-
+  async queryDeviceData(deviceId: string, productKey: string, startTime: number, endTime: number, identifier: string) {
     const params = {
-      Action: action,
+      Action: this.action,
       Format: this.config.format,
       Asc: '1',
       StartTime: startTime,

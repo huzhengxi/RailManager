@@ -27,14 +27,16 @@ export default function Setting() {
           }}
         />
         <Item title={'通知'} split icon={require('../../assets/notification.png')} />
-        <Item title={'温度单位'} icon={require('../../assets/unit.png')} />
-        <Item
-          title='测试页面'
-          onPress={() => {
-            // @ts-ignore
-            navigation.navigate('/TestPage');
-          }}
-        />
+        <Item title={'温度单位'} icon={require('../../assets/unit.png')} split />
+        {__DEV__ && (
+          <Item
+            title='测试页面'
+            onPress={() => {
+              // @ts-ignore
+              navigation.navigate('/TestPage');
+            }}
+          />
+        )}
       </RoundView>
     </ScrollView>
   );

@@ -72,9 +72,8 @@ export default function Home() {
 
 const DeviceItem = ({index, item, navigation}: {index: number; item: IDeviceItem; navigation: any}) => {
   const {name, status, isUse, timestamp, temperature} = item;
-  console.log('timestamp:', timestamp);
   const onPress = () => {
-    navigation.navigate('/Detail', {item});
+    navigation.navigate('/Detail', {device: item});
   };
   return (
     <TouchableOpacity activeOpacity={0.6} onPress={onPress}>

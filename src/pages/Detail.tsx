@@ -16,12 +16,12 @@ import {UsingHistory} from './RailUsingHistory';
 const screenWidth = Dimensions.get('window').width;
 
 export default function Detail() {
-  const item: IDeviceItem = useRouteParams(['item']).item as IDeviceItem;
-  const {timestamp} = item;
-  const {data: temperatureHistoryData = [], refresh: tempHisRefresh, loading: tempHisLoading} = useTemperatureHistory();
-  const {data: railUsingHistoryData = [], refresh: railUsingRefresh, loading: railUsingLoading} = useRailUsingHistory();
+  const device: IDeviceItem = useRouteParams(['device']).device as IDeviceItem;
+  const {timestamp} = device;
+  const {data: temperatureHistoryData = [], loading: tempHisLoading} = useTemperatureHistory(device);
+  const {data: railUsingHistoryData = [], loading: railUsingLoading} = useRailUsingHistory(device);
   const navigation = useNavigation();
-  useTitle(item.name || '');
+  useTitle(device.name || '');
   // @ts-ignore
   return (
     <ScrollView style={{flex: 1}}>
@@ -31,7 +31,7 @@ export default function Detail() {
       </View>
 
       {/* 设备状态 */}
-      <DeviceStatus device={item} />
+      <DeviceStatus device={device} />
 
       {/* 温度历史 */}
       <TempHistory loading={tempHisLoading} data={temperatureHistoryData} />
@@ -89,10 +89,10 @@ const Item = ({
 
 const TempHistory = ({data = [], loading}: {data: ITempHistory[]; loading: boolean}) => {
   const chartData = {
-    labels: data.map(({timestamp}, index) => dayjs(timestamp).format('M/DD')),
+    labels: data.map(({timestamp}, _) => dayjs(timestamp).format('M/DD')),
     datasets: [
       {
-        data: data.map(({temp}, index) => temp),
+        data: data.map(({temp}, _) => temp),
         color: (opacity = 1) => `rgba(134, 65, 244, ${opacity})`,
       },
     ],

@@ -1,9 +1,12 @@
 /**
  * Created by jason on 2022/9/12.
  */
+import dayjs from 'dayjs';
 import {useCallback, useEffect, useState} from 'react';
-import {IDeviceItem, INotificationItem, IRailUsingHistory, ITempHistory} from './types';
-import Helper from './helper';
+import {AliIoTAPIClient} from './aliIotApiClient';
+import {ONE_DAY} from './define';
+import helper from './helper';
+import {IDeviceItem, INotificationItem, IRailUsingHistory, ITempHistory, RailWayState, TrainState} from './types';
 
 export const useNotificationList = () => {
   const [loading, setLoading] = useState(true);
@@ -12,7 +15,7 @@ export const useNotificationList = () => {
   const refresh = useCallback(() => {
     setLoading(true);
     setTimeout(() => {
-      let newList = [...list].reverse();
+      const newList = [...list].reverse();
       setList(newList);
       setLoading(false);
     }, 1000);
@@ -53,150 +56,127 @@ export const useNotificationList = () => {
   };
 };
 
-export const useDevice = () => {
-  const [loading, setLoading] = useState(true);
-  const [list, setList] = useState<IDeviceItem[]>([]);
-
-  const refresh = useCallback(() => {
-    setLoading(true);
-    setTimeout(() => {
-      let newList = [...list].reverse();
-      setList(newList);
-      setLoading(false);
-    }, 1000);
-  }, [list]);
-  useEffect(() => {
-    const now = Date.now();
-    setTimeout(() => {
-      setList([
-        {
-          deviceId: 0,
-          name: '1#轨道',
-          status: 'normal',
-          timestamp: new Date().setTime(now),
-          isUse: false,
-          temperature: 45,
-        },
-        {
-          deviceId: 0,
-          name: '2#轨道',
-          status: 'normal',
-          timestamp: new Date().setTime(now),
-          isUse: true,
-          temperature: 140,
-        },
-        {
-          deviceId: 0,
-          name: '3#轨道',
-          status: 'abnormal',
-          timestamp: new Date().setTime(now),
-          isUse: false,
-          temperature: -5,
-        },
-      ]);
-      setLoading(false);
-    }, 2000);
-  }, []);
-  return {
-    loading,
-    data: list,
-    refresh,
-  };
-};
-
-// 一天的毫秒
-const ONE_DAY = 3600 * 1000 * 24;
-export const useTemperatureHistory = () => {
+export const useTemperatureHistory = (device: IDeviceItem) => {
   const [loading, setLoading] = useState(true);
   const [list, setList] = useState<ITempHistory[]>([]);
 
   useEffect(() => {
-    Helper.writeLog('温度历史：', list);
-  }, [list]);
-  const refresh = useCallback(() => {
     setLoading(true);
-    setTimeout(() => {
-      setList(generateMockTempHisData());
-      setLoading(false);
-    }, 1000);
-  }, [list]);
-  useEffect(() => {
-    setTimeout(() => {
-      setList(generateMockTempHisData());
-      setLoading(false);
-    }, 2000);
-  }, []);
+    const endTime = Date.now();
+    const startTime = endTime - ONE_DAY * 7;
+    const client = AliIoTAPIClient.getInstance();
+    client
+      .queryDeviceData(device.deviceId, device.productKey, startTime, endTime, 'railway_state')
+      .then((data) => {
+        setList(parseTemperatureData(data));
+      })
+      .finally(() => {
+        setLoading(false);
+      });
+  }, [device.deviceId, device.productKey]);
   return {
     loading,
     data: list,
-    refresh,
   };
 };
 
-export const useRailUsingHistory = () => {
+export const useRailUsingHistory = (device: IDeviceItem) => {
   const [loading, setLoading] = useState(true);
   const [list, setList] = useState<IRailUsingHistory[]>([]);
 
   useEffect(() => {
-    Helper.writeLog('轨道使用历史：', list);
-  }, [list]);
-
-  const refresh = useCallback(() => {
     setLoading(true);
-    setTimeout(() => {
-      setList(generateRailHisData());
-      setLoading(false);
-    }, 1000);
-  }, []);
-  useEffect(() => {
-    setTimeout(() => {
-      setList(generateRailHisData());
-      setLoading(false);
-    }, 2000);
-  }, []);
+    const endTime = Date.now();
+    const startTime = endTime - ONE_DAY * 7;
+    const client = AliIoTAPIClient.getInstance();
+    client
+      .queryDeviceData(device.deviceId, device.productKey, startTime, endTime, 'train_state')
+      .then((data) => {
+        setList(parseRailUsingData(data));
+      })
+      .finally(() => {
+        setLoading(false);
+      });
+  }, [device.deviceId, device.productKey]);
   return {
     loading,
     data: list,
-    refresh,
   };
 };
 
-const generateMockTempHisData = () => {
-  const now = Date.now();
-  const tempHisList: ITempHistory[] = [];
-
-  for (let i = 6; i >= 0; i--) {
-    tempHisList.push({
-      temp: Math.random() * 200 - 50,
-      timestamp: now - i * ONE_DAY,
-    });
+function parseTemperatureData(data: any): ITempHistory[] {
+  if (!data.Success) {
+    helper.writeLog('请求失败', data);
+    return [];
   }
+  const originalData: Array<{Time: number; Value: any}> = data?.Data?.List?.PropertyInfo ?? [];
+  const parsedData: ITempHistory[] = [];
+  originalData
+    ?.sort((x, y) => y.Time - x.Time)
+    ?.forEach(({Value}) => {
+      try {
+        const railwayData = JSON.parse(Value) as RailWayState['value'];
+        const newDate = dayjs(railwayData.timestamp).format('M/DD');
+        const newDateIndex = parsedData.findIndex(({date}) => newDate === date);
+        if (newDateIndex !== -1) {
+          // 如果已经存在的话，取最大值
+          parsedData[newDateIndex] = {
+            ...parsedData[newDateIndex],
+            temp: Math.max(parsedData[newDateIndex].temp, railwayData.temperature),
+          };
+        } else {
+          parsedData.push({
+            timestamp: railwayData.timestamp,
+            temp: railwayData.temperature,
+            date: newDate,
+          });
+        }
+      } catch (error: unknown) {
+        helper.writeLog('历史数据解析错误:', error);
+      }
+    });
+  return parsedData;
+}
 
-  return tempHisList;
-};
-
-const generateRailHisData = () => {
-  const now = Date.now();
-  const railHisList: IRailUsingHistory[] = [];
-  const shaftArray = [8, 16, 32, 63];
-  for (let i = 0; i < 7; i++) {
-    railHisList.push({
-      type: 'date',
-      timestamp: now - i * ONE_DAY,
-    });
-    railHisList.push({
-      type: 'history',
-      using: false,
-      timestamp: now - i * ONE_DAY,
-      description: `列车驶离，轨道空闲`,
-    });
-    railHisList.push({
-      type: 'history',
-      timestamp: now - i * ONE_DAY - Math.round(Math.random() * 4000) * 1000,
-      using: true,
-      description: `轴数为 ${shaftArray[Math.round(Math.random() * 3)]} 的列车进站`,
-    });
+function parseRailUsingData(data: any): IRailUsingHistory[] {
+  if (__DEV__) {
+    console.log(JSON.stringify(data));
   }
+  if (!data.Success) {
+    helper.writeLog('请求失败', data);
+    return [];
+  }
+  const originalData: Array<{Time: number; Value: any}> = data?.Data?.List?.PropertyInfo ?? [];
+  const parsedData: IRailUsingHistory[] = [];
+  originalData
+    ?.sort((x, y) => x.Time - x.Time)
+    ?.forEach(({Value}) => {
+      try {
+        const trainData = JSON.parse(Value) as TrainState['value'];
+        const newDate = dayjs(trainData.timestamp).format('M/DD');
+        const newDateIndex = parsedData.findIndex(({date}) => newDate === date);
+        // 不存在日期的话，插入一条日期
+        if (newDateIndex === -1) {
+          parsedData.push({
+            timestamp: trainData.timestamp,
+            type: 'date',
+            date: newDate,
+          });
+        }
+        parsedData.push({
+          timestamp: trainData.timestamp,
+          type: 'history',
+          date: newDate,
+          using: trainData.enter_or_exit === 'train_in',
+          description:
+            trainData.enter_or_exit === 'train_in'
+              ? `轴数为 ${trainData.axis_number} 的列车进站`
+              : '列车驶离，轨道空闲',
+        });
+      } catch (error) {
+        helper.writeLog('历史数据解析错误:', error);
+      }
+    });
 
-  return railHisList;
-};
+  return parsedData;
+}
