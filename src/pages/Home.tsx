@@ -48,7 +48,7 @@ export default function Home() {
             );
           }}
           onLongPress={() => {
-            const device = {deviceId: 0} as unknown as IDeviceItem;
+            const device = {deviceId: '865714066701756'} as unknown as IDeviceItem;
             dispatch(removeDevice(device));
           }}>
           <Image
