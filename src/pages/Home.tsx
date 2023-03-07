@@ -4,14 +4,14 @@
 
 import {useNavigation} from '@react-navigation/native';
 import dayjs from 'dayjs';
-import {FlatList, Image, ListRenderItem, SafeAreaView, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
+import {FlatList, ListRenderItem, SafeAreaView, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
 import {useTitle, useUpdateOptions} from '../hooks/navigation-hooks';
 import {useAppDispatch, useAppSelector} from '../store';
 import AppUtil from '../utils/AppUtil';
-import {RoundView} from '../utils/lib';
+import {HeaderRightButton, RoundView} from '../utils/lib';
 import {AppColor, AppStyles} from '../utils/styles';
 import {IDeviceItem, StatusProps} from '../utils/types';
-import {addDevice, removeDevice, updateDevice} from '../features/deviceListSlice';
+import {updateDevice} from '../features/deviceListSlice';
 import {useEffect} from 'react';
 import MqttClient from '../utils/mqttClient';
 
@@ -29,22 +29,10 @@ export default function Home() {
   useUpdateOptions({
     headerRight: () => {
       return (
-        <TouchableOpacity
-          activeOpacity={0.6}
-          style={{marginRight: 15}}
-          onPress={() => {
-            // @ts-ignore
-            navigation.navigate('/AddDevice');
-          }}
-          onLongPress={() => {
-            const device = {deviceId: '865714066701756'} as unknown as IDeviceItem;
-            dispatch(removeDevice(device));
-          }}>
-          <Image
-            source={require('../../assets/add_green.png')}
-            style={{width: 30, height: 30, resizeMode: 'contain'}}
-          />
-        </TouchableOpacity>
+        <HeaderRightButton source={require('../../assets/add_green.png')} onPress={()=> {
+          // @ts-ignore
+          navigation.navigate('/AddDevice');
+        }} />
       );
     },
   });

@@ -8,6 +8,7 @@ import AddDevice from '../pages/AddDevice';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
 import AppLog from '../pages/AppLog';
 import TestPage from '../pages/TestPage';
+import DeviceInfo from "../pages/DeviceInfo";
 
 export const Stack = createNativeStackNavigator();
 
@@ -17,6 +18,7 @@ export const NormalPage = {
   AddDevice,
   AppLog,
   TestPage,
+  DeviceInfo
 };
 
 export function createStack(pages: typeof NormalPage) {

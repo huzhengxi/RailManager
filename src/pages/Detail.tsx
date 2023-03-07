@@ -3,15 +3,17 @@
  */
 import {useNavigation} from '@react-navigation/native';
 import dayjs from 'dayjs';
-import {ColorValue, Dimensions, ScrollView, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
+import {ColorValue, Dimensions, Image, ScrollView, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
 import {LineChart} from 'react-native-chart-kit';
-import {useRouteParams, useTitle} from '../hooks/navigation-hooks';
+import {useRouteParams, useTitle, useUpdateOptions} from '../hooks/navigation-hooks';
 import AppUtil from '../utils/AppUtil';
 import {useRailUsingHistory, useTemperatureHistory} from '../utils/httpUtil';
-import {Loading, RoundView} from '../utils/lib';
+import {HeaderRightButton, Loading, RoundView} from '../utils/lib';
 import {AppColor, AppStyles} from '../utils/styles';
 import {IDeviceItem, ITempHistory} from '../utils/types';
 import {UsingHistory} from './RailUsingHistory';
+import {removeDevice} from "../features/deviceListSlice";
+import {useAppDispatch} from "../store";
 
 const screenWidth = Dimensions.get('window').width;
 
@@ -21,7 +23,19 @@ export default function Detail() {
   const {data: temperatureHistoryData = [], loading: tempHisLoading} = useTemperatureHistory(device);
   const {data: railUsingHistoryData = [], loading: railUsingLoading} = useRailUsingHistory(device);
   const navigation = useNavigation();
+
   useTitle(device.name || '');
+
+  useUpdateOptions({
+    headerRight: () => {
+      return (
+        <HeaderRightButton source={require('../../assets/setting.png')} onPress={() => {
+          // @ts-ignore
+          navigation.navigate('/DeviceInfo', {device})
+        }}/>
+      );
+    },
+  });
   // @ts-ignore
   return (
     <ScrollView style={{flex: 1}}>
@@ -31,10 +45,10 @@ export default function Detail() {
       </View>
 
       {/* 设备状态 */}
-      <DeviceStatus device={device} />
+      <DeviceStatus device={device}/>
 
       {/* 温度历史 */}
-      <TempHistory loading={tempHisLoading} data={temperatureHistoryData} />
+      <TempHistory loading={tempHisLoading} data={temperatureHistoryData}/>
 
       {/*  7天轨道占用历史 */}
       <TouchableOpacity
@@ -43,13 +57,13 @@ export default function Detail() {
           // @ts-ignore
           navigation.navigate('/RailUsingHistory', {historyData: railUsingHistoryData});
         }}>
-        <UsingHistory data={railUsingHistoryData.slice(0, 5)} loading={railUsingLoading} renderTitle />
+        <UsingHistory data={railUsingHistoryData.slice(0, 5)} loading={railUsingLoading} renderTitle/>
       </TouchableOpacity>
     </ScrollView>
   );
 }
 
-const DeviceStatus = ({device}: {device: IDeviceItem}) => {
+const DeviceStatus = ({device}: { device: IDeviceItem }) => {
   const {status, isUse, temperature} = device;
   return (
     <RoundView style={{padding: 15}}>
@@ -61,7 +75,7 @@ const DeviceStatus = ({device}: {device: IDeviceItem}) => {
           backgroundColor={AppUtil.getDeviceStatusColor(status)}
         />
         {/* 是否占用 */}
-        <Item value={isUse ? '占用中' : '未占用'} backgroundColor={AppUtil.getDeviceUsingColor(isUse || false)} />
+        <Item value={isUse ? '占用中' : '未占用'} backgroundColor={AppUtil.getDeviceUsingColor(isUse || false)}/>
         <Item
           value={`${temperature?.toFixed(1)}°`}
           title={'温度'}
@@ -73,10 +87,10 @@ const DeviceStatus = ({device}: {device: IDeviceItem}) => {
 };
 
 const Item = ({
-  title,
-  value,
-  backgroundColor,
-}: {
+                title,
+                value,
+                backgroundColor,
+              }: {
   title?: string;
   value: string | number;
   backgroundColor: ColorValue;
@@ -87,7 +101,7 @@ const Item = ({
   </View>
 );
 
-const TempHistory = ({data = [], loading}: {data: ITempHistory[]; loading: boolean}) => {
+const TempHistory = ({data = [], loading}: { data: ITempHistory[]; loading: boolean }) => {
   const chartData = {
     labels: data.map(({timestamp}, _) => dayjs(timestamp).format('M/DD')),
     datasets: [
@@ -111,8 +125,8 @@ const TempHistory = ({data = [], loading}: {data: ITempHistory[]; loading: boole
     <View style={{width: '100%'}}>
       <Text style={[AppStyles.grayText, {marginTop: 20, marginLeft: 20}]}>温度历史</Text>
       <RoundView style={{padding: 15}}>
-        {loading && <Loading />}
-        {!loading && <LineChart data={chartData} width={screenWidth - 75} height={200} chartConfig={chartConfig} />}
+        {loading && <Loading/>}
+        {!loading && <LineChart data={chartData} width={screenWidth - 75} height={200} chartConfig={chartConfig}/>}
       </RoundView>
     </View>
   );

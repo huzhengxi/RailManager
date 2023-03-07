@@ -15,8 +15,8 @@ export default function Setting() {
     Helper.writeLog('进入设置页面');
   }, []);
   return (
-    <ScrollView>
-      <RoundView>
+    <ScrollView >
+      <RoundView >
         <Item
           title={'联系我们'}
           split
@@ -45,6 +45,7 @@ export default function Setting() {
 interface ItemProps {
   /** 条目标题 */
   title: string;
+  value?: string
   /** icon */
   icon?: ImageSourcePropType;
   /** 是否有分割线 */
@@ -53,16 +54,19 @@ interface ItemProps {
   onPress?: () => void;
 }
 
-const Item = (props: ItemProps) => {
+export const Item = (props: ItemProps) => {
   const {title, split = false, icon, onPress} = props;
   return (
     <TouchableOpacity activeOpacity={0.6} onPress={onPress}>
       <View style={styles.itemContainer}>
         <View style={styles.row}>
-          <Image source={icon} style={{height: 20, width: 20, resizeMode: 'contain'}} />
+          {props.icon && <Image source={icon} style={{height: 20, width: 20, resizeMode: 'contain'}} />}
           <Text style={styles.itemTitle}>{title}</Text>
         </View>
-        <Image source={require('../../assets/enter.png')} style={{height: 15, width: 20, resizeMode: 'contain'}} />
+        <View style={{flexDirection:'row', alignItems:'center'}}>
+          {!!props.value &&<Text>{props.value}</Text>}
+          <Image source={require('../../assets/enter.png')} style={{height: 15, width: 20, resizeMode: 'contain'}} />
+        </View>
       </View>
       {split && <View style={styles.line} />}
     </TouchableOpacity>

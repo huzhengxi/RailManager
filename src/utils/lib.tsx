@@ -2,7 +2,7 @@
  * Created by jason on 2022/9/12.
  */
 import {FC, ReactNode} from 'react';
-import {ActivityIndicator, View, ViewStyle} from 'react-native';
+import {ActivityIndicator, Image, ImageSourcePropType, TouchableOpacity, View, ViewStyle} from 'react-native';
 
 export const RoundView: FC<{children: ReactNode; style?: ViewStyle}> = ({children, style = {}}) => {
   return (
@@ -27,3 +27,16 @@ export const Loading = () => (
     <ActivityIndicator />
   </View>
 );
+
+
+export const HeaderRightButton:FC<{source: ImageSourcePropType, onPress:()=>void}> = ({source, onPress})=> {
+  return <TouchableOpacity
+    activeOpacity={0.6}
+    style={{marginRight: 15}}
+    onPress={onPress}>
+    <Image
+      source={source}
+      style={{width: 30, height: 30, resizeMode: 'contain'}}
+    />
+  </TouchableOpacity>
+}
