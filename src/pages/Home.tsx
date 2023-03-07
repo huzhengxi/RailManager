@@ -34,18 +34,7 @@ export default function Home() {
           style={{marginRight: 15}}
           onPress={() => {
             // @ts-ignore
-            // navigation.navigate('/AddDevice');
-            dispatch(
-              addDevice({
-                productKey: 'a1xjcOCd61A',
-                deviceId: '865714066701756',
-                name: '1#轨道',
-                status: 'normal',
-                timestamp: new Date().setTime(Date.now()),
-                isUse: false,
-                temperature: 45,
-              })
-            );
+            navigation.navigate('/AddDevice');
           }}
           onLongPress={() => {
             const device = {deviceId: '865714066701756'} as unknown as IDeviceItem;
