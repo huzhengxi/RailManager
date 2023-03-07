@@ -3,14 +3,14 @@ import {Alert, ScrollView, View} from 'react-native';
 import {useRouteParams, useTitle} from '../hooks/navigation-hooks';
 import {RoundView} from "../utils/lib";
 import {Item} from "./Setting";
-import {IDeviceItem} from "../utils/types";
+import {IDevice} from "../utils/types";
 import {Button} from "@ant-design/react-native";
 import {useAppDispatch} from "../store";
 import {removeDevice} from "../features/deviceListSlice";
 import {useNavigation} from "@react-navigation/native";
 
 export default function DeviceInfo() {
-  const device: IDeviceItem = useRouteParams(['device']).device as IDeviceItem;
+  const device: IDevice = useRouteParams(['device']).device as IDevice;
   useTitle(device.name || '设置页面');
   const dispatch = useAppDispatch();
   const navigation = useNavigation();

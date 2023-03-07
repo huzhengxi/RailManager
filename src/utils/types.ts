@@ -6,8 +6,6 @@
  * 通知定义
  */
 export interface INotificationItem {
-  /**轨道id */
-  readonly rainId: number;
   /**轨道名称 */
   railName: string;
   /**通知时间 */
@@ -23,7 +21,7 @@ export interface INotificationItem {
  */
 export type DeviceStatus = 'normal' | 'broken' | 'busy';
 
-export interface IDeviceItem {
+export interface IDevice {
   productKey: string;
   /**id */
   readonly deviceId: string;

@@ -7,21 +7,24 @@ import {useTitle} from '../hooks/navigation-hooks';
 import {useNotificationList} from '../utils/httpUtil';
 import {RoundView} from '../utils/lib';
 import {AppStyles} from '../utils/styles';
-import {INotificationItem} from '../utils/types';
+import {IDevice, INotificationItem} from '../utils/types';
+import {useAppSelector} from "../store";
 
 export default function Notification() {
   useTitle('通知管理');
-  // const {loading, data, refresh} = useNotificationList();
+  const devices = useAppSelector<IDevice[]>((state) => state.deviceReducer);
+  const {loading, data, refresh} = useNotificationList(devices);
+
+
   return (
     <SafeAreaView style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
-      <Text style={{fontSize: 20}}>敬请期待...</Text>
-      {/* <FlatList
+      <FlatList
         refreshing={loading}
-        onRefresh={refresh}
+        onRefresh={()=>{}}
         data={data}
         renderItem={renderItem}
-        keyExtractor={(item) => `notification-keyExtractor-${item.rainId}`}
-      /> */}
+        keyExtractor={(item) => `notification-keyExtractor-${item.timestamp}`}
+      />
     </SafeAreaView>
   );
 }
@@ -37,7 +40,7 @@ const renderItem: ListRenderItem<INotificationItem> = ({index, item}) => {
           <Image style={styles.itemIcon} source={require('../../assets/trrail.png')} />
           <Text style={[AppStyles.blackText, {marginLeft: 5}]}>{description}</Text>
         </View>
-        <Text style={AppStyles.grayText}>{dayjs(timestamp).format('M/DD HH:mm')}</Text>
+        <Text style={AppStyles.grayText}>{dayjs(timestamp).format('YYYY M/DD HH:mm')}</Text>
       </View>
     </RoundView>
   );

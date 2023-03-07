@@ -6,48 +6,31 @@ import {useCallback, useEffect, useState} from 'react';
 import {AliIoTAPIClient} from './aliIotApiClient';
 import {ONE_DAY} from './define';
 import helper from './helper';
-import {IDeviceItem, INotificationItem, IRailUsingHistory, ITempHistory, RailWayState, TrainState} from './types';
+import {IDevice, INotificationItem, IRailUsingHistory, ITempHistory, RailWayState, TrainState} from './types';
 
-export const useNotificationList = () => {
-  const [loading, setLoading] = useState(true);
+export const useNotificationList = (devices?: IDevice[]) => {
+  const [loading, setLoading] = useState(false);
   const [list, setList] = useState<INotificationItem[]>([]);
 
   const refresh = useCallback(() => {
+    if (!devices || devices.length === 0) {
+      return
+    }
     setLoading(true);
-    setTimeout(() => {
-      const newList = [...list].reverse();
-      setList(newList);
-      setLoading(false);
-    }, 1000);
+    const endTime = Date.now();
+    const startTime = endTime - ONE_DAY * 7;
+    const client = AliIoTAPIClient.getInstance();
+    client
+      .queryDeviceData(devices[0].deviceId, devices[0].productKey, startTime, endTime, 'railway_state')
+      .then((data) => {
+        setList(parseNotificationData(data, devices[0]));
+      })
+      .finally(() => {
+        setLoading(false);
+      });
   }, [list]);
   useEffect(() => {
-    const now = Date.now();
-    setTimeout(() => {
-      setList([
-        {
-          rainId: 0,
-          railName: '1#轨道',
-          description: '1#轨道断轨',
-          timestamp: new Date().setTime(now),
-          unRead: false,
-        },
-        {
-          rainId: 1,
-          railName: '2#轨道',
-          description: '2#轨道恢复正常',
-          timestamp: new Date().setTime(now - 1000 * 360),
-          unRead: true,
-        },
-        {
-          rainId: 2,
-          railName: '2#轨道',
-          description: '2#轨道被占用',
-          timestamp: new Date().setTime(now - 1000 * 720),
-          unRead: false,
-        },
-      ]);
-      setLoading(false);
-    }, 2000);
+    refresh()
   }, []);
   return {
     loading,
@@ -56,7 +39,7 @@ export const useNotificationList = () => {
   };
 };
 
-export const useTemperatureHistory = (device: IDeviceItem) => {
+export const useTemperatureHistory = (device: IDevice) => {
   const [loading, setLoading] = useState(true);
   const [list, setList] = useState<ITempHistory[]>([]);
 
@@ -80,7 +63,7 @@ export const useTemperatureHistory = (device: IDeviceItem) => {
   };
 };
 
-export const useRailUsingHistory = (device: IDeviceItem) => {
+export const useRailUsingHistory = (device: IDevice) => {
   const [loading, setLoading] = useState(true);
   const [list, setList] = useState<IRailUsingHistory[]>([]);
 
@@ -109,7 +92,7 @@ function parseTemperatureData(data: any): ITempHistory[] {
     helper.writeLog('请求失败', data);
     return [];
   }
-  const originalData: Array<{Time: number; Value: any}> = data?.Data?.List?.PropertyInfo ?? [];
+  const originalData: Array<{ Time: number; Value: any }> = data?.Data?.List?.PropertyInfo ?? [];
   const parsedData: ITempHistory[] = [];
   originalData
     ?.sort((x, y) => y.Time - x.Time)
@@ -146,7 +129,7 @@ function parseRailUsingData(data: any): IRailUsingHistory[] {
     helper.writeLog('请求失败', data);
     return [];
   }
-  const originalData: Array<{Time: number; Value: any}> = data?.Data?.List?.PropertyInfo ?? [];
+  const originalData: Array<{ Time: number; Value: any }> = data?.Data?.List?.PropertyInfo ?? [];
   const parsedData: IRailUsingHistory[] = [];
   originalData
     ?.sort((x, y) => x.Time - x.Time)
@@ -179,4 +162,33 @@ function parseRailUsingData(data: any): IRailUsingHistory[] {
     });
 
   return parsedData;
+}
+
+
+function parseNotificationData(data: any, device: IDevice): INotificationItem[] {
+  if (!data.Success) {
+    helper.writeLog('请求失败', data);
+    return [];
+  }
+  const originalData: Array<{ Time: number; Value: any }> = data?.Data?.List?.PropertyInfo ?? [];
+  const parsedData: INotificationItem[] = [];
+  originalData
+    ?.sort((x, y) => y.Time - x.Time)
+    ?.forEach(({Value}) => {
+      try {
+        const railwayData = JSON.parse(Value) as RailWayState['value'];
+        if (railwayData.broken_state === 'broken' || railwayData.occupy_state === 'busy') {
+          parsedData.push({
+            railName: device.name,
+            timestamp: railwayData.timestamp,
+            unRead: false,
+            description: `${device.name} ${railwayData.broken_state === 'broken' ? '断轨' : '被占用'}`
+          });
+        }
+
+      } catch (error: unknown) {
+        helper.writeLog('历史数据解析错误:', error);
+      }
+    });
+  return parsedData.sort((x, y)=> y.timestamp - x.timestamp);
 }

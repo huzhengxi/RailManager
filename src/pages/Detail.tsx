@@ -10,7 +10,7 @@ import AppUtil from '../utils/AppUtil';
 import {useRailUsingHistory, useTemperatureHistory} from '../utils/httpUtil';
 import {HeaderRightButton, Loading, RoundView} from '../utils/lib';
 import {AppColor, AppStyles} from '../utils/styles';
-import {IDeviceItem, ITempHistory} from '../utils/types';
+import {IDevice, ITempHistory} from '../utils/types';
 import {UsingHistory} from './RailUsingHistory';
 import {removeDevice} from "../features/deviceListSlice";
 import {useAppDispatch} from "../store";
@@ -18,7 +18,7 @@ import {useAppDispatch} from "../store";
 const screenWidth = Dimensions.get('window').width;
 
 export default function Detail() {
-  const device: IDeviceItem = useRouteParams(['device']).device as IDeviceItem;
+  const device: IDevice = useRouteParams(['device']).device as IDevice;
   const {timestamp} = device;
   const {data: temperatureHistoryData = [], loading: tempHisLoading} = useTemperatureHistory(device);
   const {data: railUsingHistoryData = [], loading: railUsingLoading} = useRailUsingHistory(device);
@@ -63,7 +63,7 @@ export default function Detail() {
   );
 }
 
-const DeviceStatus = ({device}: { device: IDeviceItem }) => {
+const DeviceStatus = ({device}: { device: IDevice }) => {
   const {status, isUse, temperature} = device;
   return (
     <RoundView style={{padding: 15}}>

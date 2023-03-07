@@ -6,7 +6,7 @@ import {CameraScreen} from 'react-native-camera-kit';
 import {useTitle} from '../hooks/navigation-hooks';
 import {useAppDispatch} from '../store';
 import helper from '../utils/helper';
-import {IDeviceItem} from '../utils/types';
+import {IDevice} from '../utils/types';
 import {addDevice} from '../features/deviceListSlice';
 import {useNavigation} from '@react-navigation/native';
 
@@ -24,7 +24,7 @@ export default function AddDevice() {
     scanBusy = true;
     helper.writeLog('readCode:', event.nativeEvent.codeStringValue);
     try {
-      const device = JSON.parse(event.nativeEvent.codeStringValue) as IDeviceItem;
+      const device = JSON.parse(event.nativeEvent.codeStringValue) as IDevice;
       if (device.deviceId && device.productKey) {
         dispatch(addDevice(device));
         navigation.goBack();

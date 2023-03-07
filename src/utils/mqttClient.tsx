@@ -3,10 +3,10 @@
  */
 
 import helper from './helper';
-import {MqttDeviceData, IDeviceItem} from './types';
+import {MqttDeviceData, IDevice} from './types';
 
 // eslint-disable-next-line no-unused-vars
-type UpdateDataFunc = (data: IDeviceItem) => void;
+type UpdateDataFunc = (data: IDevice) => void;
 
 export default class MqttClient {
   private static productKey = 'a1GjE0EIQfA';

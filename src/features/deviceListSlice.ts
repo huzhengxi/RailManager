@@ -3,13 +3,13 @@
  */
 import {createSlice, PayloadAction} from '@reduxjs/toolkit';
 import {Alert} from 'react-native';
-import {IDeviceItem} from '../utils/types';
+import {IDevice} from '../utils/types';
 
 export const deviceListSlice = createSlice({
   name: 'deviceList',
   initialState: [],
   reducers: {
-    removeDevice: (devices: IDeviceItem[], payload: PayloadAction<IDeviceItem>) => {
+    removeDevice: (devices: IDevice[], payload: PayloadAction<IDevice>) => {
       const removeItemIndex = devices.findIndex((device) => device.deviceId === payload.payload.deviceId);
       if (removeItemIndex !== -1) {
         devices.splice(removeItemIndex, 1);
@@ -17,7 +17,7 @@ export const deviceListSlice = createSlice({
         Alert.alert('删除失败', '设备不存在');
       }
     },
-    addDevice: (devices: IDeviceItem[], {payload: newDevice}: PayloadAction<IDeviceItem>) => {
+    addDevice: (devices: IDevice[], {payload: newDevice}: PayloadAction<IDevice>) => {
       const deviceExist = devices.find((device) => device.deviceId === newDevice.deviceId);
       if (deviceExist) {
         Alert.alert('添加失败', '设备已添加过，不能重复添加', [
@@ -29,7 +29,7 @@ export const deviceListSlice = createSlice({
         devices.push(newDevice);
       }
     },
-    updateDevice: (devices: IDeviceItem[], {payload: data}: PayloadAction<Partial<IDeviceItem>>) => {
+    updateDevice: (devices: IDevice[], {payload: data}: PayloadAction<Partial<IDevice>>) => {
       console.log('更新数据：', devices, data);
       if (!data.deviceId) {
         return undefined;

@@ -10,7 +10,7 @@ import {useAppDispatch, useAppSelector} from '../store';
 import AppUtil from '../utils/AppUtil';
 import {HeaderRightButton, RoundView} from '../utils/lib';
 import {AppColor, AppStyles} from '../utils/styles';
-import {IDeviceItem, StatusProps} from '../utils/types';
+import {IDevice, StatusProps} from '../utils/types';
 import {updateDevice} from '../features/deviceListSlice';
 import {useEffect} from 'react';
 import MqttClient from '../utils/mqttClient';
@@ -36,8 +36,8 @@ export default function Home() {
       );
     },
   });
-  const devices = useAppSelector<IDeviceItem[]>((state) => state.deviceReducer);
-  const renderItem: ListRenderItem<IDeviceItem> = ({index, item}) => {
+  const devices = useAppSelector<IDevice[]>((state) => state.deviceReducer);
+  const renderItem: ListRenderItem<IDevice> = ({index, item}) => {
     return <DeviceItem item={item} index={index} navigation={navigation} />;
   };
   return (
@@ -47,7 +47,7 @@ export default function Home() {
   );
 }
 
-const DeviceItem = ({index, item, navigation}: {index: number; item: IDeviceItem; navigation: any}) => {
+const DeviceItem = ({index, item, navigation}: {index: number; item: IDevice; navigation: any}) => {
   const {name, status, isUse, timestamp, temperature} = item;
   const onPress = () => {
     navigation.navigate('/Detail', {device: item});
