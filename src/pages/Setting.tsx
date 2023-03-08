@@ -15,8 +15,8 @@ export default function Setting() {
     Helper.writeLog('进入设置页面');
   }, []);
   return (
-    <ScrollView >
-      <RoundView >
+    <ScrollView>
+      <RoundView>
         <Item
           title={'联系我们'}
           split
@@ -26,8 +26,16 @@ export default function Setting() {
             navigation.navigate('/AppLog');
           }}
         />
-        <Item title={'通知'} split icon={require('../../assets/notification.png')} />
-        <Item title={'温度单位'} icon={require('../../assets/unit.png')} split />
+        <Item
+          title={'通知'}
+          split
+          icon={require('../../assets/notification.png')}
+          onPress={() => {
+            // @ts-ignore
+            navigation.navigate('/NotificationSetting');
+          }}
+        />
+        {/*<Item title={'温度单位'} icon={require('../../assets/unit.png')} split />*/}
         {__DEV__ && (
           <Item
             title='测试页面'
@@ -45,7 +53,7 @@ export default function Setting() {
 interface ItemProps {
   /** 条目标题 */
   title: string;
-  value?: string
+  value?: string;
   /** icon */
   icon?: ImageSourcePropType;
   /** 是否有分割线 */
@@ -63,8 +71,8 @@ export const Item = (props: ItemProps) => {
           {props.icon && <Image source={icon} style={{height: 20, width: 20, resizeMode: 'contain'}} />}
           <Text style={styles.itemTitle}>{title}</Text>
         </View>
-        <View style={{flexDirection:'row', alignItems:'center'}}>
-          {!!props.value &&<Text>{props.value}</Text>}
+        <View style={{flexDirection: 'row', alignItems: 'center'}}>
+          {!!props.value && <Text>{props.value}</Text>}
           <Image source={require('../../assets/enter.png')} style={{height: 15, width: 20, resizeMode: 'contain'}} />
         </View>
       </View>

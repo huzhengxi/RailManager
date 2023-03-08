@@ -1,7 +1,7 @@
 /**
  * Created by jason on 2022/9/13.
  */
-import {Alert, View} from 'react-native';
+import {View} from 'react-native';
 import {CameraScreen} from 'react-native-camera-kit';
 import {useTitle} from '../hooks/navigation-hooks';
 import {useAppDispatch} from '../store';
@@ -38,6 +38,7 @@ export default function AddDevice() {
   };
   return (
     <View style={{flex: 1}}>
+      {/*// @ts-ignore*/}
       <CameraScreen
         focusMode={'off'}
         hideControls={false}
