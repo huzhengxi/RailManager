@@ -58,7 +58,7 @@ export const EmptyView: FC<{ text: string, source?: ImageSourcePropType, iconSty
        source,
        onPress
      }) => {
-  return <View style={{flex: 1, alignItems: 'center', justifyContent: 'center'}}>
+  return <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center'}}>
     <TouchableOpacity activeOpacity={.5} style={{alignItems: 'center'}} disabled={!onPress} onPress={onPress}>
       <Image style={[{width: 30, height: 30}, iconStyle]} source={source || require('../../assets/empty.png')}/>
       <Text style={{color: 'gray', marginTop: 5}}>{text}</Text>

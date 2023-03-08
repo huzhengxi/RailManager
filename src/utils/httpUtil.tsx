@@ -40,7 +40,7 @@ export const useNotificationList = (devices?: IDevice[]) => {
 };
 
 export const useTemperatureHistory = (device: IDevice) => {
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [list, setList] = useState<ITempHistory[]>([]);
 
   useEffect(() => {
@@ -64,7 +64,7 @@ export const useTemperatureHistory = (device: IDevice) => {
 };
 
 export const useRailUsingHistory = (device: IDevice) => {
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [list, setList] = useState<IRailUsingHistory[]>([]);
 
   useEffect(() => {

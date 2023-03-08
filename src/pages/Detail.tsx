@@ -8,7 +8,7 @@ import {LineChart} from 'react-native-chart-kit';
 import {useRouteParams, useTitle, useUpdateOptions} from '../hooks/navigation-hooks';
 import AppUtil from '../utils/AppUtil';
 import {useRailUsingHistory, useTemperatureHistory} from '../utils/httpUtil';
-import {HeaderRightButton, Loading, RoundView} from '../utils/lib';
+import {EmptyView, HeaderRightButton, Loading, RoundView} from '../utils/lib';
 import {AppColor, AppStyles} from '../utils/styles';
 import {IDevice, ITempHistory} from '../utils/types';
 import {UsingHistory} from './RailUsingHistory';
@@ -100,11 +100,12 @@ const Item = ({
 );
 
 const TempHistory = ({data = [], loading}: { data: ITempHistory[]; loading: boolean }) => {
+
   const chartData = {
-    labels: data.map(({timestamp}, _) => dayjs(timestamp).format('M/DD')),
+    labels: data.map(({timestamp}, _) => dayjs(timestamp).format('M/DD')) || [],
     datasets: [
       {
-        data: data.map(({temp}, _) => temp),
+        data: data.map(({temp}, _) => temp) || [],
         color: (opacity = 1) => `rgba(134, 65, 244, ${opacity})`,
       },
     ],
@@ -122,9 +123,10 @@ const TempHistory = ({data = [], loading}: { data: ITempHistory[]; loading: bool
   return (
     <View style={{width: '100%'}}>
       <Text style={[AppStyles.grayText, {marginTop: 20, marginLeft: 20}]}>温度历史</Text>
-      <RoundView style={{padding: 15}}>
+      <RoundView style={{padding: 15, minHeight: 120}}>
         {loading && <Loading/>}
-        {!loading && <LineChart data={chartData} width={screenWidth - 75} height={200} chartConfig={chartConfig}/>}
+        {!loading && data.length === 0 &&  <EmptyView text={'暂无数据'}/>}
+        {!loading &&  data.length>0&& <LineChart data={chartData} width={screenWidth - 75} height={200} chartConfig={chartConfig}/>}
       </RoundView>
     </View>
   );

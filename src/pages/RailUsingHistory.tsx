@@ -4,7 +4,7 @@
 import {FlatList, Image, ListRenderItem, StyleSheet, Text, View} from 'react-native';
 import {IRailUsingHistory, RailUsingHistoryDateType} from '../utils/types';
 import {useRouteParams, useTitle} from '../hooks/navigation-hooks';
-import {Loading, RoundView} from '../utils/lib';
+import {EmptyView, Loading, RoundView} from '../utils/lib';
 import {AppColor, AppStyles} from '../utils/styles';
 import dayjs from 'dayjs';
 
@@ -24,9 +24,10 @@ export const UsingHistory
   return (
     <View style={{width: '100%', marginBottom: 20}}>
       {renderTitle && <Text style={[AppStyles.grayText, {marginTop: 20, marginLeft: 20}]}>轨道占用历史</Text>}
-      <RoundView>
+      <RoundView style={{minHeight: 120}}>
         {loading && <Loading/>}
-        <FlatList data={data} renderItem={renderItem}/>
+        {!loading && data.length === 0 && <EmptyView text={'暂无数据'}/>}
+        {!loading && data.length > 0 && <FlatList data={data} renderItem={renderItem}/>}
       </RoundView>
     </View>
   );
