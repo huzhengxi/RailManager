@@ -1,14 +1,17 @@
-import {View} from 'react-native';
+import {NativeModules, View} from 'react-native';
 import {useTitle} from '../hooks/navigation-hooks';
 import {useEffect} from 'react';
 
-function  test() {
+const NotificationModule = NativeModules.NotificationModule;
+
+function test() {
+  NotificationModule.startService();
 }
 
 export default function TestPage() {
   useTitle('测试页面');
   useEffect(() => {
-    test()
+    test();
   }, []);
   return (
     <View
@@ -20,8 +23,3 @@ export default function TestPage() {
     />
   );
 }
-
-
-
-
-
