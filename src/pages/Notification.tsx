@@ -2,18 +2,27 @@
  * Created by jason on 2022/9/10.
  */
 import dayjs from 'dayjs';
-import {FlatList, Image, ListRenderItem, SafeAreaView, StyleSheet, Text, View} from 'react-native';
+import {Alert, FlatList, Image, ListRenderItem, SafeAreaView, StyleSheet, Text, View} from 'react-native';
 import {useTitle} from '../hooks/navigation-hooks';
 import {useNotificationList} from '../utils/httpUtil';
 import {EmptyView, RoundView} from '../utils/lib';
 import {AppStyles} from '../utils/styles';
 import {IDevice, INotificationItem} from '../utils/types';
 import {useAppSelector} from "../store";
+import {useEffect} from "react";
+import {useNavigation} from "@react-navigation/native";
 
 export default function Notification() {
   useTitle('通知管理');
   const devices = useAppSelector<IDevice[]>((state) => state.deviceReducer);
   const {loading, data, refresh} = useNotificationList(devices);
+  const navigation = useNavigation();
+  useEffect(()=> {
+    navigation.addListener('focus', ()=> {
+      refresh()
+    })
+    return ()=> navigation.removeListener('focus', ()=>{})
+  }, [])
 
   return (
     <SafeAreaView style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>

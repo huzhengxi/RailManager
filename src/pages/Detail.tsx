@@ -3,7 +3,7 @@
  */
 import {useNavigation} from '@react-navigation/native';
 import dayjs from 'dayjs';
-import {ColorValue, Dimensions, Image, ScrollView, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
+import {ColorValue, Dimensions, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
 import {LineChart} from 'react-native-chart-kit';
 import {useRouteParams, useTitle, useUpdateOptions} from '../hooks/navigation-hooks';
 import AppUtil from '../utils/AppUtil';
@@ -12,8 +12,6 @@ import {HeaderRightButton, Loading, RoundView} from '../utils/lib';
 import {AppColor, AppStyles} from '../utils/styles';
 import {IDevice, ITempHistory} from '../utils/types';
 import {UsingHistory} from './RailUsingHistory';
-import {removeDevice} from "../features/deviceListSlice";
-import {useAppDispatch} from "../store";
 
 const screenWidth = Dimensions.get('window').width;
 
@@ -38,7 +36,7 @@ export default function Detail() {
   });
   // @ts-ignore
   return (
-    <ScrollView style={{flex: 1}}>
+    <View style={{flex: 1}}>
       {/* 更新时间 */}
       <View style={[AppStyles.row, {justifyContent: 'flex-end', paddingRight: 20, marginTop: 15}]}>
         <Text style={AppStyles.grayText}>{dayjs(timestamp).format('M/DD HH:mm')}</Text>
@@ -59,7 +57,7 @@ export default function Detail() {
         }}>
         <UsingHistory data={railUsingHistoryData.slice(0, 5)} loading={railUsingLoading} renderTitle/>
       </TouchableOpacity>
-    </ScrollView>
+    </View>
   );
 }
 
