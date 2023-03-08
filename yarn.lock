@@ -4300,6 +4300,11 @@ event-target-shim@^5.0.0, event-target-shim@^5.0.1:
   resolved "https://registry.npmmirror.com/event-target-shim/-/event-target-shim-5.0.1.tgz#5d4d3ebdf9583d63a5333ce2deb7480ab2b05789"
   integrity sha512-i/2XbnSz/uxRCU6+NdVJgKWDTM427+MqYbkQzD321DuCQJUqOuJKIA0IM2+W2xtYHdKOmZ4dR6fExsd4SXL+WQ==
 
+eventemitter3@^4.0.7:
+  version "4.0.7"
+  resolved "https://registry.npmmirror.com/eventemitter3/-/eventemitter3-4.0.7.tgz#2de9b68f6528d5644ef5c59526a1b4a07306169f"
+  integrity sha512-8guHBZCwKnFhYdHr2ysuRWErTwhoN2X8XELRlrRwpmfeY2jjuUN4taQMsULKUVo1K4DvZl+0pgfyoysHxvmvEw==
+
 events@^3.3.0:
   version "3.3.0"
   resolved "https://registry.npmmirror.com/events/-/events-3.3.0.tgz#31a95ad0a924e2d2c419a813aeb2c4e878ea7400"
@@ -7314,6 +7319,13 @@ pkg-dir@^3.0.0:
   dependencies:
     find-up "^3.0.0"
 
+pkg-dir@^5.0.0:
+  version "5.0.0"
+  resolved "https://registry.npmmirror.com/pkg-dir/-/pkg-dir-5.0.0.tgz#a02d6aebe6ba133a928f74aec20bafdfe6b8e760"
+  integrity sha512-NPE8TDbzl/3YQYY7CSS228s3g2ollTFnc+Qi3tqmqJp9Vg2ovUpixcJEo2HJScN2Ez+kEaal6y70c0ehqJBJeA==
+  dependencies:
+    find-up "^5.0.0"
+
 pkg-up@^3.1.0:
   version "3.1.0"
   resolved "https://registry.npmmirror.com/pkg-up/-/pkg-up-3.1.0.tgz#100ec235cc150e4fd42519412596a28512a0def5"
@@ -7622,6 +7634,13 @@ react-lifecycles-compat@^3.0.4:
   resolved "https://registry.npmmirror.com/react-lifecycles-compat/-/react-lifecycles-compat-3.0.4.tgz#4f1a273afdfc8f3488a8c516bfda78f872352362"
   integrity sha512-fBASbA6LnOU9dOU2eW7aQ8xmYBSXUIWr+UmF9b1efZBazGNO+rcXT/icdKnYm2pTwcRylVUYwW7H1PHfLekVzA==
 
+react-native-background-actions@^3.0.0:
+  version "3.0.0"
+  resolved "https://registry.npmmirror.com/react-native-background-actions/-/react-native-background-actions-3.0.0.tgz#fbdaf31a5485cea68cff03358516da8ffc2a4fe0"
+  integrity sha512-O/KFdetp8n9cwSfPJQ7hPywTaEHO1ui7ISxKTGkzHxs3IVgEV+QOvKKLxAkTcQs1w5f68KK/LoQsEVwMpbVqew==
+  dependencies:
+    eventemitter3 "^4.0.7"
+
 react-native-camera-kit@^13.0.0:
   version "13.0.0"
   resolved "https://registry.npmmirror.com/react-native-camera-kit/-/react-native-camera-kit-13.0.0.tgz#983d9146cdeb0ec0cb0c0a86b7fa5f7690df08f6"
@@ -7694,10 +7713,13 @@ react-native-modal-popover@^2.0.1:
     lodash "^4.17.21"
     prop-types "^15.7.2"
 
-react-native-permissions@^3.6.1:
-  version "3.6.1"
-  resolved "https://registry.npmmirror.com/react-native-permissions/-/react-native-permissions-3.6.1.tgz#73adcc1cef8cd57a9ef167b4507405f4ff5749c4"
-  integrity sha512-fzPpPQXeD34inUccqtoResSwYubfrwUguP4qrVUUv8+KSMjYSaHGoS5HaIJLZHlN9gO+TvLJZ2L5ZljTsb6qnQ==
+react-native-permissions@^3.7.3:
+  version "3.7.3"
+  resolved "https://registry.npmmirror.com/react-native-permissions/-/react-native-permissions-3.7.3.tgz#4a417f3a0ece03cf682fb5b80b8c72adcf05860a"
+  integrity sha512-kHf79ygx1jP58IuaUimxj8McQK85OwerN8dnndOhgG8eyLeJMNiBFafKizbxFSCCCo1jmAAbTpA3iLM0UhHpbQ==
+  dependencies:
+    picocolors "^1.0.0"
+    pkg-dir "^5.0.0"
 
 react-native-quick-base64@^2.0.2, react-native-quick-base64@^2.0.5:
   version "2.0.5"

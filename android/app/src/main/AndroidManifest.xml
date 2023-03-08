@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     package="com.anonymous.RailManager">
 
     <uses-permission android:name="android.permission.CAMERA" />
@@ -8,7 +9,8 @@
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
     <uses-permission android:name="android.permission.VIBRATE" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
 
     <queries>
         <intent>
@@ -32,6 +34,11 @@
             android:name=".NotificationService"
             android:enabled="true"
             android:exported="true" />
+        <service
+            android:name="com.asterinet.react.bgactions.RNBackgroundActionsTask"
+            android:enabled="true"
+            android:exported="false"
+            tools:ignore="MissingClass" />
 
         <meta-data
             android:name="expo.modules.updates.ENABLED"

@@ -4,7 +4,7 @@
 import {Image, ImageSourcePropType, ScrollView, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
 import {useTitle} from '../hooks/navigation-hooks';
 import {RoundView} from '../utils/lib';
-import {useEffect} from 'react';
+import {FC, useEffect} from 'react';
 import Helper from '../utils/helper';
 import {useNavigation} from '@react-navigation/native';
 
@@ -60,10 +60,11 @@ interface ItemProps {
   split?: boolean;
   /** 点击事件 */
   onPress?: () => void;
+  RightView?: FC;
 }
 
 export const Item = (props: ItemProps) => {
-  const {title, split = false, icon, onPress} = props;
+  const {title, split = false, icon, onPress, RightView} = props;
   return (
     <TouchableOpacity activeOpacity={0.6} onPress={onPress}>
       <View style={styles.itemContainer}>
@@ -71,10 +72,13 @@ export const Item = (props: ItemProps) => {
           {props.icon && <Image source={icon} style={{height: 20, width: 20, resizeMode: 'contain'}} />}
           <Text style={styles.itemTitle}>{title}</Text>
         </View>
-        <View style={{flexDirection: 'row', alignItems: 'center'}}>
-          {!!props.value && <Text>{props.value}</Text>}
-          <Image source={require('../../assets/enter.png')} style={{height: 15, width: 20, resizeMode: 'contain'}} />
-        </View>
+        {!!RightView && <RightView />}
+        {!RightView && (
+          <View style={{flexDirection: 'row', alignItems: 'center'}}>
+            {!!props.value && <Text>{props.value}</Text>}
+            <Image source={require('../../assets/enter.png')} style={{height: 15, width: 20, resizeMode: 'contain'}} />
+          </View>
+        )}
       </View>
       {split && <View style={styles.line} />}
     </TouchableOpacity>
