@@ -4,11 +4,11 @@
 
 import {useNavigation} from '@react-navigation/native';
 import dayjs from 'dayjs';
-import {FlatList, ListRenderItem, SafeAreaView, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
+import {FlatList, Image, ListRenderItem, SafeAreaView, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
 import {useTitle, useUpdateOptions} from '../hooks/navigation-hooks';
 import {useAppDispatch, useAppSelector} from '../store';
 import AppUtil from '../utils/AppUtil';
-import {HeaderRightButton, RoundView} from '../utils/lib';
+import {EmptyView, HeaderRightButton, RoundView} from '../utils/lib';
 import {AppColor, AppStyles} from '../utils/styles';
 import {IDevice, StatusProps} from '../utils/types';
 import {updateDevice} from '../features/deviceListSlice';
@@ -19,6 +19,7 @@ export default function Home() {
   useTitle('轨道监测系统');
   const navigation = useNavigation();
   const dispatch = useAppDispatch();
+  const devices = useAppSelector<IDevice[]>((state) => state.deviceReducer);
 
   useEffect(() => {
     MqttClient.connect((deviceData) => {
@@ -28,26 +29,37 @@ export default function Home() {
 
   useUpdateOptions({
     headerRight: () => {
+      if (devices.length == 0) {
+        return null
+      }
       return (
-        <HeaderRightButton source={require('../../assets/add_green.png')} onPress={()=> {
+        <HeaderRightButton source={require('../../assets/add_green.png')} onPress={() => {
           // @ts-ignore
           navigation.navigate('/AddDevice');
-        }} />
+        }}/>
       );
     },
   });
-  const devices = useAppSelector<IDevice[]>((state) => state.deviceReducer);
   const renderItem: ListRenderItem<IDevice> = ({index, item}) => {
-    return <DeviceItem item={item} index={index} navigation={navigation} />;
+    return <DeviceItem item={item} index={index} navigation={navigation}/>;
   };
   return (
     <SafeAreaView style={{flex: 1}}>
-      <FlatList refreshing={false} onRefresh={() => {}} data={devices} renderItem={renderItem} />
+      {devices.length === 0 &&
+          <EmptyView
+              text={'添加设备'}
+              source={require('../../assets/add_green.png')}
+              onPress={() => {
+                // @ts-ignore
+                navigation.navigate('/AddDevice');
+              }}
+          />}
+      {devices.length > 0 && <FlatList refreshing={false} onRefresh={() => {}} data={devices} renderItem={renderItem}/>}
     </SafeAreaView>
   );
 }
 
-const DeviceItem = ({index, item, navigation}: {index: number; item: IDevice; navigation: any}) => {
+const DeviceItem = ({index, item, navigation}: { index: number; item: IDevice; navigation: any }) => {
   const {name, status, isUse, timestamp, temperature} = item;
   const onPress = () => {
     navigation.navigate('/Detail', {device: item});
@@ -64,12 +76,12 @@ const DeviceItem = ({index, item, navigation}: {index: number; item: IDevice; na
 
           {/* 各种状态 */}
           <View style={[AppStyles.row, {justifyContent: 'space-between', marginTop: 15, width: '100%'}]}>
-            <Status title={'状态：'} text={status === 'normal' ? '良好' : '断轨'} status={status} />
-            <Status title={'是否占用：'} text={isUse ? '占用' : '未占用'} status={isUse ? 'broken' : 'normal'} />
+            <Status title={'状态：'} text={status === 'normal' ? '良好' : '断轨'} status={status}/>
+            <Status title={'是否占用：'} text={isUse ? '占用' : '未占用'} status={isUse ? 'broken' : 'normal'}/>
           </View>
 
           {/* 温度 */}
-          <Temperature temp={temperature} />
+          <Temperature temp={temperature}/>
         </View>
       </RoundView>
     </TouchableOpacity>
@@ -89,7 +101,7 @@ const Status = ({text, status, title}: StatusProps) => (
 const MAX_TEMP = 150;
 const MIN_TEMP = -50;
 const RANGE = MAX_TEMP - MIN_TEMP;
-const Temperature = ({temp}: {temp: number | undefined}) => {
+const Temperature = ({temp}: { temp: number | undefined }) => {
   if (temp === undefined) {
     return null;
   }

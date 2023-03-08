@@ -1,5 +1,5 @@
 import React, {useEffect} from 'react';
-import {StatusBar} from 'react-native';
+import {StatusBar, TouchableOpacity} from 'react-native';
 import {NavigationContainer} from '@react-navigation/native';
 import BottomTabs from './src/navigator/BottomTabs';
 import {createStack, NormalPage, Stack} from './src/utils/navigationFactory';

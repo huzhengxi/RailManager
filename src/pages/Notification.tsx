@@ -5,7 +5,7 @@ import dayjs from 'dayjs';
 import {FlatList, Image, ListRenderItem, SafeAreaView, StyleSheet, Text, View} from 'react-native';
 import {useTitle} from '../hooks/navigation-hooks';
 import {useNotificationList} from '../utils/httpUtil';
-import {RoundView} from '../utils/lib';
+import {EmptyView, RoundView} from '../utils/lib';
 import {AppStyles} from '../utils/styles';
 import {IDevice, INotificationItem} from '../utils/types';
 import {useAppSelector} from "../store";
@@ -15,16 +15,16 @@ export default function Notification() {
   const devices = useAppSelector<IDevice[]>((state) => state.deviceReducer);
   const {loading, data, refresh} = useNotificationList(devices);
 
-
   return (
     <SafeAreaView style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
-      <FlatList
-        refreshing={loading}
-        onRefresh={()=>{}}
-        data={data}
-        renderItem={renderItem}
-        keyExtractor={(item) => `notification-keyExtractor-${item.timestamp}`}
-      />
+      {data.length === 0 && !loading && <EmptyView text={'暂无通知'}/>}
+      {(data.length > 0 || loading) && <FlatList
+          refreshing={loading}
+          onRefresh={() => {}}
+          data={data}
+          renderItem={renderItem}
+          keyExtractor={(item) => `notification-keyExtractor-${item.timestamp}`}
+      />}
     </SafeAreaView>
   );
 }
@@ -34,10 +34,10 @@ const renderItem: ListRenderItem<INotificationItem> = ({index, item}) => {
 
   return (
     <RoundView key={`notification-item-${index}`}>
-      {unRead && <View style={styles.unRead} />}
+      {unRead && <View style={styles.unRead}/>}
       <View style={[AppStyles.row, styles.itemContainer]}>
         <View style={AppStyles.row}>
-          <Image style={styles.itemIcon} source={require('../../assets/trrail.png')} />
+          <Image style={styles.itemIcon} source={require('../../assets/trrail.png')}/>
           <Text style={[AppStyles.blackText, {marginLeft: 5}]}>{description}</Text>
         </View>
         <Text style={AppStyles.grayText}>{dayjs(timestamp).format('YYYY M/DD HH:mm')}</Text>
