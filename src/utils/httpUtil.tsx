@@ -6,7 +6,7 @@ import {AliIoTAPIClient} from './aliIotApiClient';
 import {ONE_DAY} from './define';
 import helper from './helper';
 import {IDevice, INotificationItem, IRailUsingHistory, ITempHistory, RailWayState, TrainState} from './types';
-import {timeFormat} from './TimeUtil';
+import {timeFormat, timeValid} from './TimeUtil';
 
 export const useNotificationList = (devices?: IDevice[]) => {
   const [loading, setLoading] = useState(false);
@@ -76,9 +76,6 @@ export const useRailUsingHistory = (device: IDevice) => {
   const [list, setList] = useState<IRailUsingHistory[]>([]);
 
   useEffect(() => {
-    if (__DEV__) {
-      return;
-    }
     setLoading(true);
     const endTime = Date.now();
     const startTime = endTime - ONE_DAY * 7;
@@ -113,20 +110,22 @@ function parseTemperatureData(
     ?.forEach(({Value}) => {
       try {
         const railwayData = JSON.parse(Value) as RailWayState['value'];
-        const newDate = timeFormat(railwayData.timestamp, 'M/DD');
-        const newDateIndex = parsedData.findIndex(({date}) => newDate === date);
-        if (newDateIndex !== -1) {
-          // 如果已经存在的话，取最大值
-          parsedData[newDateIndex] = {
-            ...parsedData[newDateIndex],
-            temp: Math.max(parsedData[newDateIndex].temp, railwayData.temperature),
-          };
-        } else {
-          parsedData.push({
-            timestamp: railwayData.timestamp,
-            temp: railwayData.temperature,
-            date: newDate,
-          });
+        if (timeValid(railwayData.timestamp)) {
+          const newDate = timeFormat(railwayData.timestamp, 'M/DD');
+          const newDateIndex = parsedData.findIndex(({date}) => newDate === date);
+          if (newDateIndex !== -1) {
+            // 如果已经存在的话，取最大值
+            parsedData[newDateIndex] = {
+              ...parsedData[newDateIndex],
+              temp: Math.max(parsedData[newDateIndex].temp, railwayData.temperature),
+            };
+          } else {
+            parsedData.push({
+              timestamp: railwayData.timestamp,
+              temp: railwayData.temperature,
+              date: newDate,
+            });
+          }
         }
       } catch (error: unknown) {
         helper.writeLog('历史数据解析错误:', error);
@@ -140,9 +139,6 @@ function parseTemperatureData(
 }
 
 function parseRailUsingData(data: any): IRailUsingHistory[] {
-  if (__DEV__) {
-    console.log(JSON.stringify(data));
-  }
   if (!data.Success) {
     helper.writeLog('请求失败', data);
     return [];
@@ -154,26 +150,28 @@ function parseRailUsingData(data: any): IRailUsingHistory[] {
     ?.forEach(({Value}) => {
       try {
         const trainData = JSON.parse(Value) as TrainState['value'];
-        const newDate = timeFormat(trainData.timestamp, 'M/DD');
-        const newDateIndex = parsedData.findIndex(({date}) => newDate === date);
-        // 不存在日期的话，插入一条日期
-        if (newDateIndex === -1) {
+        if (timeValid(trainData.timestamp)) {
+          const newDate = timeFormat(trainData.timestamp, 'M/DD');
+          const newDateIndex = parsedData.findIndex(({date}) => newDate === date);
+          // 不存在日期的话，插入一条日期
+          if (newDateIndex === -1) {
+            parsedData.push({
+              timestamp: trainData.timestamp,
+              type: 'date',
+              date: newDate,
+            });
+          }
           parsedData.push({
             timestamp: trainData.timestamp,
-            type: 'date',
+            type: 'history',
             date: newDate,
+            using: trainData.enter_or_exit === 'train_in',
+            description:
+              trainData.enter_or_exit === 'train_in'
+                ? `轴数为 ${trainData.axis_number} 的列车进站`
+                : '列车驶离，轨道空闲',
           });
         }
-        parsedData.push({
-          timestamp: trainData.timestamp,
-          type: 'history',
-          date: newDate,
-          using: trainData.enter_or_exit === 'train_in',
-          description:
-            trainData.enter_or_exit === 'train_in'
-              ? `轴数为 ${trainData.axis_number} 的列车进站`
-              : '列车驶离，轨道空闲',
-        });
       } catch (error) {
         helper.writeLog('历史数据解析错误:', error);
       }
@@ -194,7 +192,10 @@ function parseNotificationData(data: any, device: IDevice): INotificationItem[] 
     ?.forEach(({Value}) => {
       try {
         const railwayData = JSON.parse(Value) as RailWayState['value'];
-        if (railwayData.broken_state === 'broken' || railwayData.occupy_state === 'busy') {
+        if (
+          timeValid(railwayData.timestamp) &&
+          (railwayData.broken_state === 'broken' || railwayData.occupy_state === 'busy')
+        ) {
           parsedData.push({
             railName: device.name,
             timestamp: railwayData.timestamp,
