@@ -26,7 +26,7 @@ export interface IDevice {
   /**id */
   readonly deviceId: string;
   /**轨道名称 */
-  readonly name: string;
+  name: string;
   /**数据更新时间 */
   timestamp?: number;
   /**状态：良好、断轨 */
@@ -63,6 +63,7 @@ export interface ITempHistory {
  * 轨道占用历史数据定义
  */
 export type RailUsingHistoryDateType = 'date' | 'history';
+
 export interface IRailUsingHistory {
   timestamp: number;
   using?: boolean;
