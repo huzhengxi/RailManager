@@ -3,7 +3,6 @@
  */
 
 import {useNavigation} from '@react-navigation/native';
-import dayjs from 'dayjs';
 import {FlatList, ListRenderItem, SafeAreaView, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
 import {useTitle, useUpdateOptions} from '../hooks/navigation-hooks';
 import {useAppDispatch, useAppSelector} from '../store';
@@ -14,7 +13,7 @@ import {IDevice, StatusProps} from '../utils/types';
 import {updateDevice} from '../features/deviceListSlice';
 import {useEffect} from 'react';
 import MqttClient from '../utils/mqttClient';
-import {timeFormat} from "../utils/TimeUtil";
+import {timeFormat} from '../utils/TimeUtil';
 
 export default function Home() {
   useTitle('轨道监测系统');
@@ -28,22 +27,25 @@ export default function Home() {
     });
   }, [dispatch]);
 
-  useUpdateOptions({
-    headerRight: () => {
-      if (devices.length == 0) {
-        return null;
-      }
-      return (
-        <HeaderRightButton
-          source={require('../../assets/add_green.png')}
-          onPress={() => {
-            // @ts-ignore
-            navigation.navigate('/AddDevice');
-          }}
-        />
-      );
+  useUpdateOptions(
+    {
+      headerRight: () => {
+        if (devices.length === 0) {
+          return null;
+        }
+        return (
+          <HeaderRightButton
+            source={require('../../assets/add_green.png')}
+            onPress={() => {
+              // @ts-ignore
+              navigation.navigate('/AddDevice');
+            }}
+          />
+        );
+      },
     },
-  });
+    [devices.length]
+  );
   const renderItem: ListRenderItem<IDevice> = ({index, item}) => {
     return <DeviceItem item={item} index={index} navigation={navigation} />;
   };
