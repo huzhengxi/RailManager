@@ -39,7 +39,7 @@ export class AliIoTAPIClient {
     const params = {
       Action: this.action,
       Format: this.config.format,
-      Asc: '1',
+      Asc: '0',
       StartTime: startTime,
       EndTime: endTime,
       Identifier: identifier,
