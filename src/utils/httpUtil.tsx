@@ -1,13 +1,12 @@
 /**
  * Created by jason on 2022/9/12.
  */
-import dayjs from 'dayjs';
 import {useCallback, useEffect, useState} from 'react';
 import {AliIoTAPIClient} from './aliIotApiClient';
 import {ONE_DAY} from './define';
 import helper from './helper';
 import {IDevice, INotificationItem, IRailUsingHistory, ITempHistory, RailWayState, TrainState} from './types';
-import {timeFormat} from "./TimeUtil";
+import {timeFormat} from './TimeUtil';
 
 export const useNotificationList = (devices?: IDevice[]) => {
   const [loading, setLoading] = useState(false);
@@ -15,14 +14,14 @@ export const useNotificationList = (devices?: IDevice[]) => {
 
   const refresh = useCallback(() => {
     if (!devices || devices.length === 0) {
-      return
+      return;
     }
     setLoading(true);
     const endTime = Date.now();
     const startTime = endTime - ONE_DAY * 7;
     const client = AliIoTAPIClient.getInstance();
     client
-      .queryDeviceData(devices[0].deviceId, devices[0].productKey, startTime, endTime, 'railway_state')
+      .queryDeviceHistoryData(devices[0].deviceId, startTime, endTime, 'railway_state')
       .then((data) => {
         setList(parseNotificationData(data, devices[0]));
       })
@@ -31,7 +30,7 @@ export const useNotificationList = (devices?: IDevice[]) => {
       });
   }, [list]);
   useEffect(() => {
-    refresh()
+    refresh();
   }, []);
   return {
     loading,
@@ -50,7 +49,7 @@ export const useTemperatureHistory = (device: IDevice) => {
     const startTime = endTime - ONE_DAY * 7;
     const client = AliIoTAPIClient.getInstance();
     client
-      .queryDeviceData(device.deviceId, device.productKey, startTime, endTime, 'railway_state')
+      .queryDeviceHistoryData(device.deviceId, startTime, endTime, 'railway_state')
       .then((data) => {
         setList(parseTemperatureData(data));
       })
@@ -74,7 +73,7 @@ export const useRailUsingHistory = (device: IDevice) => {
     const startTime = endTime - ONE_DAY * 7;
     const client = AliIoTAPIClient.getInstance();
     client
-      .queryDeviceData(device.deviceId, device.productKey, startTime, endTime, 'train_state')
+      .queryDeviceHistoryData(device.deviceId, startTime, endTime, 'train_state')
       .then((data) => {
         setList(parseRailUsingData(data));
       })
@@ -93,14 +92,14 @@ function parseTemperatureData(data: any): ITempHistory[] {
     helper.writeLog('请求失败', data);
     return [];
   }
-  const originalData: Array<{ Time: number; Value: any }> = data?.Data?.List?.PropertyInfo ?? [];
+  const originalData: Array<{Time: number; Value: any}> = data?.Data?.List?.PropertyInfo ?? [];
   const parsedData: ITempHistory[] = [];
   originalData
     ?.sort((x, y) => y.Time - x.Time)
     ?.forEach(({Value}) => {
       try {
         const railwayData = JSON.parse(Value) as RailWayState['value'];
-        const newDate = timeFormat(railwayData.timestamp, 'M/DD') ;
+        const newDate = timeFormat(railwayData.timestamp, 'M/DD');
         const newDateIndex = parsedData.findIndex(({date}) => newDate === date);
         if (newDateIndex !== -1) {
           // 如果已经存在的话，取最大值
@@ -130,14 +129,14 @@ function parseRailUsingData(data: any): IRailUsingHistory[] {
     helper.writeLog('请求失败', data);
     return [];
   }
-  const originalData: Array<{ Time: number; Value: any }> = data?.Data?.List?.PropertyInfo ?? [];
+  const originalData: Array<{Time: number; Value: any}> = data?.Data?.List?.PropertyInfo ?? [];
   const parsedData: IRailUsingHistory[] = [];
   originalData
     ?.sort((x, y) => x.Time - x.Time)
     ?.forEach(({Value}) => {
       try {
         const trainData = JSON.parse(Value) as TrainState['value'];
-        const newDate = timeFormat(trainData.timestamp, 'M/DD') ;
+        const newDate = timeFormat(trainData.timestamp, 'M/DD');
         const newDateIndex = parsedData.findIndex(({date}) => newDate === date);
         // 不存在日期的话，插入一条日期
         if (newDateIndex === -1) {
@@ -165,13 +164,12 @@ function parseRailUsingData(data: any): IRailUsingHistory[] {
   return parsedData;
 }
 
-
 function parseNotificationData(data: any, device: IDevice): INotificationItem[] {
   if (!data.Success) {
     helper.writeLog('请求失败', data);
     return [];
   }
-  const originalData: Array<{ Time: number; Value: any }> = data?.Data?.List?.PropertyInfo ?? [];
+  const originalData: Array<{Time: number; Value: any}> = data?.Data?.List?.PropertyInfo ?? [];
   const parsedData: INotificationItem[] = [];
   originalData
     ?.sort((x, y) => y.Time - x.Time)
@@ -183,13 +181,12 @@ function parseNotificationData(data: any, device: IDevice): INotificationItem[] 
             railName: device.name,
             timestamp: railwayData.timestamp,
             unRead: false,
-            description: `${device.name} ${railwayData.broken_state === 'broken' ? '断轨' : '被占用'}`
+            description: `${device.name} ${railwayData.broken_state === 'broken' ? '断轨' : '被占用'}`,
           });
         }
-
       } catch (error: unknown) {
         helper.writeLog('历史数据解析错误:', error);
       }
     });
-  return parsedData.sort((x, y)=> y.timestamp - x.timestamp);
+  return parsedData.sort((x, y) => y.timestamp - x.timestamp);
 }

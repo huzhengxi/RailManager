@@ -1,7 +1,8 @@
 import crypto from 'react-native-quick-crypto';
 import querystring from 'querystring';
 import axios, {AxiosInstance} from 'axios';
-import {AccessKey, AccessKeySecret} from '../localconfig/config';
+import {AccessKey, AccessKeySecret, ProductKey} from '../localconfig/config';
+import {Identifier} from './types';
 
 interface IAliApiConfig {
   accessKeyId: string;
@@ -10,23 +11,20 @@ interface IAliApiConfig {
   format: 'JSON' | 'hex';
 }
 
+type Actions =
+  | 'QueryDevicePropertyData' //查询设备的属性历史数据
+  | 'QueryDevicePropertiesData' //批量查询指定设备的多个属性的历史数据
+  | 'QueryDeviceDetail' //查询设备详情
+  | 'BatchUpdateDeviceNickname'; //更新设备名称
+
 export class AliIoTAPIClient {
   private static instance: AliIoTAPIClient | undefined;
-
-  static getInstance() {
-    if (!this.instance) {
-      this.instance = new AliIoTAPIClient();
-    }
-    return this.instance;
-  }
-
   private config: IAliApiConfig = {
     accessKeyId: AccessKey,
     accessKeySecret: AccessKeySecret,
     regionId: 'cn-shanghai',
     format: 'JSON',
   };
-  private action = 'QueryDevicePropertyData';
   private client: AxiosInstance;
 
   private constructor() {
@@ -35,39 +33,83 @@ export class AliIoTAPIClient {
     });
   }
 
-  async queryDeviceData(deviceId: string, productKey: string, startTime: number, endTime: number, identifier: string) {
-    const params = {
-      Action: this.action,
-      Format: this.config.format,
+  static getInstance() {
+    if (!this.instance) {
+      this.instance = new AliIoTAPIClient();
+    }
+    return this.instance;
+  }
+
+  async updateNickname(deviceId: string, nickName: string) {
+    const url = this.buildRequestURL({
+      Action: 'BatchUpdateDeviceNickname',
+      DeviceNicknameInfo: [
+        {
+          ProductKey,
+          DeviceName: deviceId,
+          Nickname: nickName,
+        },
+      ],
+    });
+    const response = await this.client.get(url, {});
+    return response.data;
+  }
+
+  async queryDeviceDetail(deviceId: string) {
+    return this.queryData(deviceId, 'QueryDeviceDetail');
+  }
+
+  /**
+   * 获取单个属性的历史数据
+   * @param deviceId
+   * @param productKey
+   * @param startTime
+   * @param endTime
+   * @param identifier
+   */
+  async queryDeviceHistoryData(
+    deviceId: string,
+    startTime: number,
+    endTime: number,
+    identifier: Identifier,
+    pageSize = 50
+  ) {
+    return this.queryData(deviceId, 'QueryDevicePropertyData', {
       Asc: '0',
       StartTime: startTime,
       EndTime: endTime,
       Identifier: identifier,
-      PageSize: '50',
-      DeviceName: deviceId,
-      ProductKey: productKey,
-      RegionId: this.config.regionId,
-    };
+      PageSize: `${pageSize}`,
+    });
+  }
 
-    const url = this.buildRequestURL(params);
+  private async queryData(deviceId: string, action: Actions, params: Record<string, unknown> = {}) {
+    const url = this.buildRequestURL({
+      DeviceName: deviceId,
+      Action: action,
+      ProductKey,
+      ...params,
+    });
     const response = await this.client.get(url);
 
     return response.data;
   }
 
-  private buildRequestURL(params: Record<string, any>) {
+  private buildRequestURL(params: Record<string, any>, method: 'GET' | 'POST' = 'GET') {
     params.SignatureMethod = 'HMAC-SHA1';
     params.SignatureNonce = String(Date.now() + Math.floor(Math.random() * 1000));
     params.SignatureVersion = '1.0';
     params.AccessKeyId = this.config.accessKeyId;
     params.Timestamp = new Date().toISOString();
     params.Version = '2018-01-20';
+    params.RegionId = this.config.regionId;
+    params.Format = this.config.format;
     const keys = Object.keys(params).sort();
 
     const canonicalizedQueryString = keys
       .map((key) => `${encodeURIComponent(key)}=${encodeURIComponent(params[key])}`)
       .join('&');
-    const stringToSign = `GET&%2F&${encodeURIComponent(canonicalizedQueryString)}`;
+    const stringToSign = `${method}&%2F&${encodeURIComponent(canonicalizedQueryString)}`;
     const signature = crypto
       .createHmac('sha1', `${this.config.accessKeySecret}&`)
       .update(stringToSign)

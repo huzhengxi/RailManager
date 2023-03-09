@@ -8,13 +8,12 @@ import {Provider} from 'react-redux';
 import store from './src/store';
 import {PersistGate} from 'redux-persist/integration/react';
 import {persistStore} from 'redux-persist';
-import {startNotificationService} from './src/services/notificationService';
 
 const persistorGate = persistStore(store);
 
 export default function App() {
   useEffect(() => {
-    startNotificationService();
+    // startNotificationService();
     // 清理日志
     Helper.clearLog();
   }, []);

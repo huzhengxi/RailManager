@@ -104,3 +104,5 @@ export interface TrainState {
     timestamp: number;
   };
 }
+
+export type Identifier = 'railway_state' | 'train_state';
