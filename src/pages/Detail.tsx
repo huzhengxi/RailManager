@@ -2,7 +2,6 @@
  * Created by jason on 2022/9/10.
  */
 import {useNavigation} from '@react-navigation/native';
-import dayjs from 'dayjs';
 import {ColorValue, Dimensions, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
 import {LineChart} from 'react-native-chart-kit';
 import {useRouteParams, useTitle, useUpdateOptions} from '../hooks/navigation-hooks';
@@ -12,7 +11,7 @@ import {EmptyView, HeaderRightButton, Loading, RoundView} from '../utils/lib';
 import {AppColor, AppStyles} from '../utils/styles';
 import {IDevice, ITempHistory} from '../utils/types';
 import {UsingHistory} from './RailUsingHistory';
-import {timeFormat} from "../utils/TimeUtil";
+import {timeFormat} from '../utils/TimeUtil';
 
 const screenWidth = Dimensions.get('window').width;
 
@@ -28,10 +27,13 @@ export default function Detail() {
   useUpdateOptions({
     headerRight: () => {
       return (
-        <HeaderRightButton source={require('../../assets/setting.png')} onPress={() => {
-          // @ts-ignore
-          navigation.navigate('/DeviceInfo', {device})
-        }}/>
+        <HeaderRightButton
+          source={require('../../assets/setting.png')}
+          onPress={() => {
+            // @ts-ignore
+            navigation.navigate('/DeviceInfo', {device});
+          }}
+        />
       );
     },
   });
@@ -40,14 +42,14 @@ export default function Detail() {
     <View style={{flex: 1}}>
       {/* 更新时间 */}
       <View style={[AppStyles.row, {justifyContent: 'flex-end', paddingRight: 20, marginTop: 15}]}>
-        <Text style={AppStyles.grayText}>{timestamp ? timeFormat(timestamp, 'M/DD HH:mm') : '--' }</Text>
+        <Text style={AppStyles.grayText}>{timestamp ? timeFormat(timestamp, 'M/DD HH:mm') : '--'}</Text>
       </View>
 
       {/* 设备状态 */}
-      <DeviceStatus device={device}/>
+      <DeviceStatus device={device} />
 
       {/* 温度历史 */}
-      <TempHistory loading={tempHisLoading} data={temperatureHistoryData}/>
+      <TempHistory loading={tempHisLoading} data={temperatureHistoryData} />
 
       {/*  7天轨道占用历史 */}
       <TouchableOpacity
@@ -56,13 +58,13 @@ export default function Detail() {
           // @ts-ignore
           navigation.navigate('/RailUsingHistory', {historyData: railUsingHistoryData});
         }}>
-        <UsingHistory data={railUsingHistoryData.slice(0, 5)} loading={railUsingLoading} renderTitle/>
+        <UsingHistory data={railUsingHistoryData.slice(0, 5)} loading={railUsingLoading} renderTitle />
       </TouchableOpacity>
     </View>
   );
 }
 
-const DeviceStatus = ({device}: { device: IDevice }) => {
+const DeviceStatus = ({device}: {device: IDevice}) => {
   const {status, isUse, temperature} = device;
   return (
     <RoundView style={{padding: 15}}>
@@ -74,7 +76,7 @@ const DeviceStatus = ({device}: { device: IDevice }) => {
           backgroundColor={AppUtil.getDeviceStatusColor(status)}
         />
         {/* 是否占用 */}
-        <Item value={isUse ? '占用中' : '未占用'} backgroundColor={AppUtil.getDeviceUsingColor(isUse || false)}/>
+        <Item value={isUse ? '占用中' : '未占用'} backgroundColor={AppUtil.getDeviceUsingColor(isUse || false)} />
         <Item
           value={`${temperature?.toFixed(1)}°`}
           title={'温度'}
@@ -86,10 +88,10 @@ const DeviceStatus = ({device}: { device: IDevice }) => {
 };
 
 const Item = ({
-                title,
-                value,
-                backgroundColor,
-              }: {
+  title,
+  value,
+  backgroundColor,
+}: {
   title?: string;
   value: string | number;
   backgroundColor: ColorValue;
@@ -100,10 +102,9 @@ const Item = ({
   </View>
 );
 
-const TempHistory = ({data = [], loading}: { data: ITempHistory[]; loading: boolean }) => {
-
+const TempHistory = ({data = [], loading}: {data: ITempHistory[]; loading: boolean}) => {
   const chartData = {
-    labels: data.map(({timestamp}, _) => timeFormat(timestamp, 'M/DD') ) || [],
+    labels: data.map(({timestamp}, _) => timeFormat(timestamp, 'M/DD')) || [],
     datasets: [
       {
         data: data.map(({temp}, _) => temp) || [],
@@ -125,9 +126,11 @@ const TempHistory = ({data = [], loading}: { data: ITempHistory[]; loading: bool
     <View style={{width: '100%'}}>
       <Text style={[AppStyles.grayText, {marginTop: 20, marginLeft: 20}]}>温度历史</Text>
       <RoundView style={{padding: 15, minHeight: 120}}>
-        {loading && <Loading/>}
-        {!loading && data.length === 0 &&  <EmptyView text={'暂无数据'}/>}
-        {!loading &&  data.length>0&& <LineChart data={chartData} width={screenWidth - 75} height={200} chartConfig={chartConfig}/>}
+        {loading && <Loading />}
+        {!loading && data.length === 0 && <EmptyView text={'暂无数据'} />}
+        {!loading && data.length > 0 && (
+          <LineChart data={chartData} width={screenWidth - 75} height={200} chartConfig={chartConfig} />
+        )}
       </RoundView>
     </View>
   );

@@ -13,8 +13,6 @@ const persistorGate = persistStore(store);
 
 export default function App() {
   useEffect(() => {
-    // startNotificationService();
-    // 清理日志
     Helper.clearLog();
   }, []);
   return (

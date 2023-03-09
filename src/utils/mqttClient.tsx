@@ -3,7 +3,7 @@
  */
 
 import helper from './helper';
-import {MqttDeviceData, IDevice} from './types';
+import {IDevice, MqttDeviceData} from './types';
 
 // eslint-disable-next-line no-unused-vars
 type UpdateDataFunc = (data: IDevice) => void;
@@ -18,6 +18,7 @@ export default class MqttClient {
   private static clientId = 'a1GjE0EIQfA.android_app|securemode=2,signmethod=hmacsha256,timestamp=1678072991906|';
 
   private static isConnected = false;
+  private static client: any;
 
   static connect(updateData: UpdateDataFunc) {
     if (MqttClient.isConnected) {
@@ -26,27 +27,27 @@ export default class MqttClient {
     }
     const mqttModule = require('mqtt/dist/mqtt');
 
-    const client = mqttModule.connect(MqttClient.url, {
+    MqttClient.client = mqttModule.connect(MqttClient.url, {
       username: MqttClient.userName,
       password: MqttClient.password,
       clientId: MqttClient.clientId,
     });
 
     helper.writeLog('开始链接');
-    client.on('connect', (mqtt: unknown) => {
+    MqttClient.client.on('connect', (mqtt: unknown) => {
       MqttClient.isConnected = true;
       helper.writeLog('mqtt 连接成功', mqtt);
-      client.subscribe(MqttClient.subTopic);
+      MqttClient.client.subscribe(MqttClient.subTopic);
     });
-    client.on('error', (error: unknown) => {
+    MqttClient.client.on('error', (error: unknown) => {
       helper.writeLog('mqtt 发生错误：', error);
     });
-    client.on('close', (mqtt: unknown) => {
+    MqttClient.client.on('close', (mqtt: unknown) => {
       MqttClient.isConnected = false;
       helper.writeLog('mqtt 断开连接', mqtt);
     });
 
-    client.on('message', (topic: string, payload: any) => {
+    MqttClient.client.on('message', (topic: string, payload: any) => {
       helper.writeLog('接收到数据：', topic, payload.toString());
       try {
         const mqttData = JSON.parse(payload.toString()) as MqttDeviceData;
@@ -63,5 +64,9 @@ export default class MqttClient {
         helper.writeLog('jason数据转换失败：', e, payload.toString());
       }
     });
+  }
+
+  static close() {
+    MqttClient.client?.end?.();
   }
 }

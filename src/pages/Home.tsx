@@ -3,7 +3,7 @@
  */
 
 import {useNavigation} from '@react-navigation/native';
-import {FlatList, ListRenderItem, SafeAreaView, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
+import {AppState, FlatList, ListRenderItem, SafeAreaView, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
 import {useTitle, useUpdateOptions} from '../hooks/navigation-hooks';
 import {useAppDispatch, useAppSelector} from '../store';
 import AppUtil from '../utils/AppUtil';
@@ -14,6 +14,7 @@ import {updateDevice} from '../features/deviceListSlice';
 import {useEffect} from 'react';
 import MqttClient from '../utils/mqttClient';
 import {timeFormat} from '../utils/TimeUtil';
+import Helper from '../utils/helper';
 
 export default function Home() {
   useTitle('轨道监测系统');
@@ -22,10 +23,21 @@ export default function Home() {
   const devices = useAppSelector<IDevice[]>((state) => state.deviceReducer);
 
   useEffect(() => {
-    MqttClient.connect((deviceData) => {
-      dispatch(updateDevice(deviceData));
+    const freshData = () => {
+      MqttClient.connect((deviceData) => {
+        dispatch(updateDevice(deviceData));
+      });
+    };
+    freshData();
+    AppState.addEventListener('change', (state) => {
+      Helper.writeLog('App change:', state);
+      if (state === 'active') {
+        freshData();
+      } else if (state === 'background') {
+        MqttClient.close();
+      }
     });
-  }, [dispatch]);
+  }, []);
 
   useUpdateOptions(
     {

@@ -3,6 +3,7 @@ import querystring from 'querystring';
 import axios, {AxiosInstance} from 'axios';
 import {AccessKey, AccessKeySecret, ProductKey} from '../localconfig/config';
 import {Identifier} from './types';
+import helper from './helper';
 
 interface IAliApiConfig {
   accessKeyId: string;
@@ -74,6 +75,7 @@ export class AliIoTAPIClient {
     identifier: Identifier,
     pageSize = 50
   ) {
+    helper.writeLog(`deviceID:${deviceId}, startTime:${startTime}, endTime:${endTime}`);
     return this.queryData(deviceId, 'QueryDevicePropertyData', {
       Asc: '0',
       StartTime: startTime,
