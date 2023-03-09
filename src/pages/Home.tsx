@@ -14,6 +14,7 @@ import {IDevice, StatusProps} from '../utils/types';
 import {updateDevice} from '../features/deviceListSlice';
 import {useEffect} from 'react';
 import MqttClient from '../utils/mqttClient';
+import {timeFormat} from "../utils/TimeUtil";
 
 export default function Home() {
   useTitle('轨道监测系统');
@@ -77,7 +78,7 @@ const DeviceItem = ({index, item, navigation}: {index: number; item: IDevice; na
           {/* 名称和更新时间 */}
           <View style={[AppStyles.row, {justifyContent: 'space-between', width: '100%'}]}>
             <Text style={AppStyles.title}>{name}</Text>
-            <Text style={AppStyles.grayText}>{dayjs(timestamp).format('M/DD hh:mm')}</Text>
+            <Text style={AppStyles.grayText}>{timestamp ? timeFormat(timestamp, 'M/DD hh:mm') : '--'}</Text>
           </View>
 
           {/* 各种状态 */}

@@ -7,6 +7,7 @@ import {AliIoTAPIClient} from './aliIotApiClient';
 import {ONE_DAY} from './define';
 import helper from './helper';
 import {IDevice, INotificationItem, IRailUsingHistory, ITempHistory, RailWayState, TrainState} from './types';
+import {timeFormat} from "./TimeUtil";
 
 export const useNotificationList = (devices?: IDevice[]) => {
   const [loading, setLoading] = useState(false);
@@ -99,7 +100,7 @@ function parseTemperatureData(data: any): ITempHistory[] {
     ?.forEach(({Value}) => {
       try {
         const railwayData = JSON.parse(Value) as RailWayState['value'];
-        const newDate = dayjs(railwayData.timestamp).format('M/DD');
+        const newDate = timeFormat(railwayData.timestamp, 'M/DD') ;
         const newDateIndex = parsedData.findIndex(({date}) => newDate === date);
         if (newDateIndex !== -1) {
           // 如果已经存在的话，取最大值
@@ -136,7 +137,7 @@ function parseRailUsingData(data: any): IRailUsingHistory[] {
     ?.forEach(({Value}) => {
       try {
         const trainData = JSON.parse(Value) as TrainState['value'];
-        const newDate = dayjs(trainData.timestamp).format('M/DD');
+        const newDate = timeFormat(trainData.timestamp, 'M/DD') ;
         const newDateIndex = parsedData.findIndex(({date}) => newDate === date);
         // 不存在日期的话，插入一条日期
         if (newDateIndex === -1) {

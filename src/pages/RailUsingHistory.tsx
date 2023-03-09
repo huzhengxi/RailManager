@@ -7,6 +7,7 @@ import {useRouteParams, useTitle} from '../hooks/navigation-hooks';
 import {EmptyView, Loading, RoundView} from '../utils/lib';
 import {AppColor, AppStyles} from '../utils/styles';
 import dayjs from 'dayjs';
+import {timeFormat} from "../utils/TimeUtil";
 
 export default function RailUsingHistory() {
   useTitle('轨道占用历史');
@@ -58,9 +59,9 @@ const RailUsingHistoryItem = ({
       </View>
       <View style={[AppStyles.column, {alignItems: 'flex-start', marginLeft: 20}]}>
         {type === 'date' &&
-          <Text style={[AppStyles.blackText, {fontSize: 15}]}>{dayjs(timestamp).format('M/DD')}</Text>}
+          <Text style={[AppStyles.blackText, {fontSize: 15}]}>{timeFormat(timestamp, 'M/DD')}</Text>}
         {type !== 'date' && <>
-          <Text style={AppStyles.grayText}>{dayjs(timestamp).format('H:mm')}</Text>
+          <Text style={AppStyles.grayText}>{timeFormat(timestamp, 'H:mm')}</Text>
           <Text style={[AppStyles.blackText, {marginTop: 5}]}>{description}</Text>
         </>}
       </View>

@@ -11,6 +11,7 @@ import {IDevice, INotificationItem} from '../utils/types';
 import {useAppSelector} from "../store";
 import {useEffect} from "react";
 import {useNavigation} from "@react-navigation/native";
+import {timeFormat} from "../utils/TimeUtil";
 
 export default function Notification() {
   useTitle('通知管理');
@@ -49,7 +50,7 @@ const renderItem: ListRenderItem<INotificationItem> = ({index, item}) => {
           <Image style={styles.itemIcon} source={require('../../assets/trrail.png')}/>
           <Text style={[AppStyles.blackText, {marginLeft: 5}]}>{description}</Text>
         </View>
-        <Text style={AppStyles.grayText}>{dayjs(timestamp).format('YYYY M/DD HH:mm')}</Text>
+        <Text style={AppStyles.grayText}>{ timeFormat(timestamp, 'M/DD HH:mm') }</Text>
       </View>
     </RoundView>
   );
