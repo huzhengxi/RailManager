@@ -73,7 +73,13 @@ export function sendNotification(newDevice: IDevice, oldDevice: IDevice) {
       });
     }
 
-    store.dispatch(updateDevice(newDevice));
+    store.dispatch(
+      updateDevice({
+        ...newDevice,
+        // 设备名称不能改
+        name: oldDevice.name,
+      })
+    );
   } else {
     console.log('新数据', JSON.stringify(newDevice));
     console.log('老数据', JSON.stringify(oldDevice));

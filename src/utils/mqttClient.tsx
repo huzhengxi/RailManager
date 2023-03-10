@@ -53,13 +53,12 @@ export default class MqttClient {
         const mqttData = JSON.parse(payload.toString()) as MqttDeviceData;
         updateData({
           deviceId: mqttData.deviceName,
-          name: mqttData.deviceName,
           productKey: mqttData.productKey,
           timestamp: mqttData.items.railway_state.value.timestamp,
           status: mqttData.items.railway_state.value.broken_state,
           temperature: mqttData.items.railway_state.value.temperature,
           isUse: mqttData.items.railway_state.value.occupy_state === 'busy',
-        });
+        } as const as IDevice);
       } catch (e: unknown) {
         helper.writeLog('jason数据转换失败：', e, payload.toString());
       }
