@@ -106,3 +106,9 @@ export interface TrainState {
 }
 
 export type Identifier = 'railway_state' | 'train_state';
+
+export interface IHistory<T> {
+  hasNext: boolean;
+  nextTime?: number;
+  history: T[];
+}

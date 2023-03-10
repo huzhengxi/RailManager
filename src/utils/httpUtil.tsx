@@ -5,7 +5,7 @@ import {useCallback, useEffect, useRef, useState} from 'react';
 import {AliIoTAPIClient} from './aliIotApiClient';
 import {ONE_DAY} from './define';
 import helper from './helper';
-import {IDevice, INotificationItem, IRailUsingHistory, ITempHistory, RailWayState, TrainState} from './types';
+import {IDevice, IHistory, INotificationItem, IRailUsingHistory, ITempHistory, RailWayState, TrainState} from './types';
 import {timeFormat, timeValid} from './TimeUtil';
 
 export const useNotificationList = (devices?: IDevice[]) => {
@@ -52,9 +52,9 @@ export const useTemperatureHistory = (device: IDevice) => {
     client
       .queryDeviceHistoryData(device.deviceId, startTime, endTime, 'railway_state')
       .then((data) => {
-        const {history, nextTime, isNext} = parseTemperatureData(list, data);
+        const {history, nextTime, hasNext} = parseTemperatureData(list, data);
         setList([...history]);
-        if (isNext && nextTime) {
+        if (hasNext && nextTime) {
           setEndTime(nextTime);
         } else {
           setLoading(false);
@@ -90,10 +90,10 @@ export const useRailUsingHistory = (device: IDevice, firstPageSize = 50) => {
       client
         .queryDeviceHistoryData(device.deviceId, startTime, endTime, 'train_state', pageSize)
         .then((data) => {
-          const {history, isNext, nextTime} = parseRailUsingData(data, list);
+          const {history, hasNext, nextTime} = parseRailUsingData(data, list);
           setList([...history]);
-          setHasNext(isNext);
-          if (isNext && nextTime) {
+          setHasNext(hasNext);
+          if (hasNext && nextTime) {
             setEndTime(nextTime);
           }
         })
@@ -118,93 +118,85 @@ export const useRailUsingHistory = (device: IDevice, firstPageSize = 50) => {
   };
 };
 
-function parseTemperatureData(
-  prevList: ITempHistory[],
-  data: any
-): {isNext: boolean; nextTime?: number; history: ITempHistory[]} {
-  if (!data.Success) {
-    helper.writeLog('请求失败', data);
-    return {isNext: false, history: [...prevList]};
+function parseTemperatureData(prevList: ITempHistory[], data: any): IHistory<ITempHistory> {
+  const {history, nextTime, hasNext} = parseResponseData<RailWayState['value']>(data);
+
+  if (history.length === 0) {
+    return {hasNext: false, history: [...prevList]};
   }
-  const originalData: Array<{Time: number; Value: any}> = data?.Data?.List?.PropertyInfo ?? [];
+
   const parsedData: ITempHistory[] = [...prevList];
-  originalData
-    ?.sort((x, y) => y.Time - x.Time)
-    ?.forEach(({Value}) => {
-      try {
-        const railwayData = JSON.parse(Value) as RailWayState['value'];
-        if (timeValid(railwayData.timestamp)) {
-          const newDate = timeFormat(railwayData.timestamp, 'M/DD');
-          const newDateIndex = parsedData.findIndex(({date}) => newDate === date);
-          if (newDateIndex !== -1) {
-            // 如果已经存在的话，取最大值
-            parsedData[newDateIndex] = {
-              ...parsedData[newDateIndex],
-              temp: Math.max(parsedData[newDateIndex].temp, railwayData.temperature),
-            };
-          } else {
-            parsedData.push({
-              timestamp: railwayData.timestamp,
-              temp: railwayData.temperature,
-              date: newDate,
-            });
-          }
+  try {
+    history
+      .filter(({timestamp}) => timeValid(timestamp))
+      .sort((a, b) => a.timestamp - b.timestamp)
+      .map((railwayData) => {
+        const newDate = timeFormat(railwayData.timestamp, 'M/DD');
+        const newDateIndex = parsedData.findIndex(({date}) => newDate === date);
+        if (newDateIndex !== -1) {
+          // 如果已经存在的话，取最大值
+          parsedData[newDateIndex] = {
+            ...parsedData[newDateIndex],
+            temp: Math.max(parsedData[newDateIndex].temp, railwayData.temperature),
+          };
+        } else {
+          parsedData.push({
+            timestamp: railwayData.timestamp,
+            temp: railwayData.temperature,
+            date: newDate,
+          });
         }
-      } catch (error: unknown) {
-        helper.writeLog('历史数据解析错误:', error);
-      }
-    });
+      });
+  } catch (error) {
+    helper.writeLog('历史数据解析错误:', error);
+  }
+
   return {
-    isNext: data?.Data?.NextValid ?? false,
-    nextTime: data?.Data?.NextTime ?? Date.now(),
-    history: parsedData.sort((a, b) => b.timestamp - a.timestamp),
+    hasNext,
+    nextTime,
+    history: parsedData,
   };
 }
 
-function parseRailUsingData(
-  data: any,
-  prevList: IRailUsingHistory[]
-): {isNext: boolean; nextTime?: number; history: IRailUsingHistory[]} {
-  if (!data.Success) {
+function parseRailUsingData(data: any, prevList: IRailUsingHistory[]): IHistory<IRailUsingHistory> {
+  const {hasNext, nextTime, history} = parseResponseData<TrainState['value']>(data);
+  if (history.length === 0) {
     helper.writeLog('请求失败', data);
-    return {isNext: false, history: [...prevList]};
+    return {hasNext: false, history: [...prevList]};
   }
-  const originalData: Array<{Time: number; Value: any}> = data?.Data?.List?.PropertyInfo ?? [];
   const parsedData: IRailUsingHistory[] = [...prevList];
-  originalData
-    ?.sort((x, y) => x.Time - x.Time)
-    ?.forEach(({Value}) => {
-      try {
-        const trainData = JSON.parse(Value) as TrainState['value'];
-        if (timeValid(trainData.timestamp)) {
-          const newDate = timeFormat(trainData.timestamp, 'M/DD');
-          const newDateIndex = parsedData.findIndex(({date}) => newDate === date);
-          // 不存在日期的话，插入一条日期
-          if (newDateIndex === -1) {
-            parsedData.push({
-              timestamp: trainData.timestamp,
-              type: 'date',
-              date: newDate,
-            });
-          }
+  try {
+    history
+      .filter(({timestamp}) => timeValid(timestamp))
+      .sort((a, b) => b.timestamp - a.timestamp)
+      .forEach((trainData) => {
+        const newDate = timeFormat(trainData.timestamp, 'M/DD');
+        const newDateIndex = parsedData.findIndex(({date}) => newDate === date);
+        // 不存在日期的话，插入一条日期
+        if (newDateIndex === -1) {
           parsedData.push({
             timestamp: trainData.timestamp,
-            type: 'history',
+            type: 'date',
             date: newDate,
-            using: trainData.enter_or_exit === 'train_in',
-            description:
-              trainData.enter_or_exit === 'train_in'
-                ? `轴数为 ${trainData.axis_number} 的列车进站`
-                : '列车驶离，轨道空闲',
           });
         }
-      } catch (error) {
-        helper.writeLog('历史数据解析错误:', error);
-      }
-    });
+        parsedData.push({
+          timestamp: trainData.timestamp,
+          type: 'history',
+          date: newDate,
+          using: trainData.enter_or_exit === 'train_in',
+          description:
+            trainData.enter_or_exit === 'train_in'
+              ? `轴数为 ${trainData.axis_number} 的列车进站`
+              : '列车驶离，轨道空闲',
+        });
+      });
+  } catch (error) {
+    helper.writeLog('历史数据解析错误:', error);
+  }
 
   return {
-    isNext: parsedData.length !== prevList.length && ((data?.Data?.NextValid as boolean) ?? false),
+    hasNext: parsedData.length !== prevList.length && ((data?.Data?.NextValid as boolean) ?? false),
     nextTime: data?.Data?.NextTime ?? Date.now(),
     history: parsedData,
   };
@@ -238,4 +230,25 @@ function parseNotificationData(data: any, device: IDevice): INotificationItem[] 
       }
     });
   return parsedData.sort((x, y) => y.timestamp - x.timestamp);
+}
+
+export function parseResponseData<T>({Success, Data}: {Success: boolean; Data: any}): {
+  hasNext: boolean;
+  nextTime?: number;
+  history: T[];
+} {
+  if (!Success) {
+    return {
+      hasNext: false,
+      history: [],
+    };
+  }
+
+  return {
+    hasNext: Data?.NextValid ?? false,
+    nextTime: Data?.NextTime ?? Date.now(),
+    history: ((Data?.List?.PropertyInfo ?? []) as Array<{Value: string; Time: number}>).map(
+      ({Value}) => JSON.parse(Value) as T
+    ),
+  };
 }
