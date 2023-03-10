@@ -21,10 +21,6 @@ export default class MqttClient {
   private static client: any;
 
   static connect(updateData: UpdateDataFunc) {
-    if (__DEV__) {
-      console.log('测试环境，不连mqtt');
-      return;
-    }
     if (MqttClient.isConnected) {
       helper.writeLog('mqtt已经连接，直接返回');
       return;
