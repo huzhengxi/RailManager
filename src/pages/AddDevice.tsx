@@ -109,8 +109,11 @@ export default function AddDevice() {
           onReadCode={onSuccess}
           showFrame
           laserColor={'green'}
-          frameColor='green'
-        />
+          frameColor='green' cameraRatioOverlay={undefined} captureButtonImage={undefined}
+          captureButtonImageStyle={{}} cameraFlipImage={undefined} cameraFlipImageStyle={{}}
+          torchOnImage={undefined} torchOffImage={undefined} torchImageStyle={{}}
+          onBottomButtonPressed={function (event: any): void {
+          }}/>
       )}
     </View>
   );

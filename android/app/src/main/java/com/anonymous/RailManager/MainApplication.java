@@ -6,8 +6,6 @@ import android.content.res.Configuration;
 
 import androidx.annotation.NonNull;
 
-import com.anonymous.RailManager.newarchitecture.modules.NotificationModule;
-import com.anonymous.RailManager.newarchitecture.modules.NotificationPackage;
 import com.facebook.react.PackageList;
 import com.facebook.react.ReactApplication;
 import com.facebook.react.ReactInstanceManager;
@@ -36,7 +34,6 @@ public class MainApplication extends Application implements ReactApplication {
                 protected List<ReactPackage> getPackages() {
                     @SuppressWarnings("UnnecessaryLocalVariable")
                     List<ReactPackage> packages = new PackageList(this).getPackages();
-                    packages.add(new NotificationPackage());
                     return packages;
                 }
 

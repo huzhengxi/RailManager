@@ -2,6 +2,7 @@
  * Created by jason on 2023/3/8.
  */
 import BackgroundService from 'react-native-background-actions';
+import {AppColor} from "../utils/styles";
 
 const sleep = (time: number) => new Promise<void>((resolve) => setTimeout(() => resolve(), time));
 
@@ -28,13 +29,12 @@ const options = {
   taskIcon: {
     name: 'ic_launcher',
     type: 'mipmap',
-    package: 'com.anonymous.RailManager',
   },
-  color: '#ff00ff',
-  linkingURI: 'www.baidu.com', // See Deep Linking for more info
+  color: AppColor.green,
   parameters: {
     delay: 5000,
   },
+  linkingURI: 'com.anonymous.railManager', // Add this
 };
 
 export const startNotificationService = () => {

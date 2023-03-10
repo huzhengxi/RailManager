@@ -31,14 +31,9 @@
         android:theme="@style/AppTheme"
         android:usesCleartextTraffic="true">
         <service
-            android:name=".NotificationService"
-            android:enabled="true"
-            android:exported="true" />
-        <service
             android:name="com.asterinet.react.bgactions.RNBackgroundActionsTask"
             android:enabled="true"
-            android:exported="false"
-            tools:ignore="MissingClass" />
+            android:exported="true" />
 
         <meta-data
             android:name="expo.modules.updates.ENABLED"
@@ -75,7 +70,7 @@
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
 
-                <data android:scheme="com.anonymous.RailManager" />
+                <data android:scheme="com.anonymous.railManager" />
             </intent-filter>
         </activity>
         <activity
