@@ -75,13 +75,12 @@ export class AliIoTAPIClient {
     identifier: Identifier,
     pageSize = 50
   ) {
-    helper.writeLog(`deviceID:${deviceId}, startTime:${startTime}, endTime:${endTime}`);
     return this.queryData(deviceId, 'QueryDevicePropertyData', {
-      Asc: '0',
+      Asc: 0,
       StartTime: startTime,
       EndTime: endTime,
       Identifier: identifier,
-      PageSize: `${pageSize}`,
+      PageSize: pageSize,
     });
   }
 
@@ -93,7 +92,7 @@ export class AliIoTAPIClient {
       ...params,
     });
     const response = await this.client.get(url);
-
+    // console.log('response', JSON.stringify( response.data))
     return response.data;
   }
 

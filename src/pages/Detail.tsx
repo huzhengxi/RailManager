@@ -19,7 +19,7 @@ export default function Detail() {
   const device: IDevice = useRouteParams(['device']).device as IDevice;
   const {timestamp} = device;
   const {data: temperatureHistoryData = [], loading: tempHisLoading} = useTemperatureHistory(device);
-  const {data: railUsingHistoryData = [], loading: railUsingLoading} = useRailUsingHistory(device);
+  const {data: railUsingHistoryData = [], loading: railUsingLoading } = useRailUsingHistory(device, 20);
   const navigation = useNavigation();
 
   useTitle(device.name || '');
@@ -56,9 +56,9 @@ export default function Detail() {
         activeOpacity={0.6}
         onPress={() => {
           // @ts-ignore
-          navigation.navigate('/RailUsingHistory', {historyData: railUsingHistoryData});
+          navigation.navigate('/RailUsingHistory', {device});
         }}>
-        <UsingHistory data={railUsingHistoryData.slice(0, 5)} loading={railUsingLoading} renderTitle />
+        <UsingHistory data={railUsingHistoryData} loading={railUsingLoading} renderTitle  />
       </TouchableOpacity>
     </View>
   );
