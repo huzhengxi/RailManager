@@ -44,9 +44,9 @@ export const refreshRecentlyDataFromServer = async () => {
       };
       console.log('newDevice:', JSON.stringify(newDevice));
       if (newDevice.status !== device.status || newDevice.isUse !== device.isUse) {
-        let desc = `轨道 ${newDevice.name} ${newDevice.status === 'normal' ? '恢复正常' : '断轨'}`;
+        let desc = ` ${newDevice.name} ${newDevice.status === 'normal' ? '恢复正常' : '断轨'}`;
         if (newDevice.isUse !== device.isUse) {
-          desc = `轨道 ${newDevice.name} ${newDevice.isUse ? '被占用' : '空闲'}`;
+          desc = `${newDevice.name} ${newDevice.isUse ? '被占用' : '空闲'}`;
         }
         helper.writeLog('数据更新，通知', desc);
         helper.writeLog('老数据:', device);
@@ -54,7 +54,7 @@ export const refreshRecentlyDataFromServer = async () => {
         await BackgroundService.updateNotification({
           ...options,
           taskTitle: '轨道状态变化',
-          taskDesc: `轨道 ${newDevice.name} 断轨`,
+          taskDesc: desc,
         });
         //通知
         store.dispatch(updateDevice(newDevice));
