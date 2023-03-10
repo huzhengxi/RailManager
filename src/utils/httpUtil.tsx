@@ -23,7 +23,7 @@ export const useNotificationList = (devices?: IDevice[]) => {
     client
       .queryDeviceHistoryData(devices[0].deviceId, startTime, endTime, 'railway_state')
       .then((data) => {
-        setList(parseNotificationData(data, devices[0]));
+        setList(parseNotificationData(data, devices[0], list).history);
       })
       .finally(() => {
         setLoading(false);
@@ -120,11 +120,6 @@ export const useRailUsingHistory = (device: IDevice, firstPageSize = 50) => {
 
 function parseTemperatureData(prevList: ITempHistory[], data: any): IHistory<ITempHistory> {
   const {history, nextTime, hasNext} = parseResponseData<RailWayState['value']>(data);
-
-  if (history.length === 0) {
-    return {hasNext: false, history: [...prevList]};
-  }
-
   const parsedData: ITempHistory[] = [...prevList];
   try {
     history
@@ -160,10 +155,6 @@ function parseTemperatureData(prevList: ITempHistory[], data: any): IHistory<ITe
 
 function parseRailUsingData(data: any, prevList: IRailUsingHistory[]): IHistory<IRailUsingHistory> {
   const {hasNext, nextTime, history} = parseResponseData<TrainState['value']>(data);
-  if (history.length === 0) {
-    helper.writeLog('请求失败', data);
-    return {hasNext: false, history: [...prevList]};
-  }
   const parsedData: IRailUsingHistory[] = [...prevList];
   try {
     history
@@ -196,40 +187,40 @@ function parseRailUsingData(data: any, prevList: IRailUsingHistory[]): IHistory<
   }
 
   return {
-    hasNext: parsedData.length !== prevList.length && ((data?.Data?.NextValid as boolean) ?? false),
-    nextTime: data?.Data?.NextTime ?? Date.now(),
+    hasNext,
+    nextTime,
     history: parsedData,
   };
 }
 
-function parseNotificationData(data: any, device: IDevice): INotificationItem[] {
-  if (!data.Success) {
-    helper.writeLog('请求失败', data);
-    return [];
+function parseNotificationData(data: any, device: IDevice, prevList: INotificationItem[]): IHistory<INotificationItem> {
+  const {hasNext, nextTime, history} = parseResponseData<RailWayState['value']>(data);
+
+  const parsedData: INotificationItem[] = [...prevList];
+  try {
+    history
+      .filter(
+        ({timestamp, broken_state, occupy_state}) =>
+          timeValid(timestamp) && (broken_state === 'broken' || occupy_state === 'busy')
+      )
+      .sort((a, b) => b.timestamp - a.timestamp)
+      .forEach((railwayData) => {
+        parsedData.push({
+          railName: device.name,
+          timestamp: railwayData.timestamp,
+          unRead: false,
+          description: `${device.name} ${railwayData.broken_state === 'broken' ? '断轨' : '被占用'}`,
+        });
+      });
+  } catch (error: unknown) {
+    helper.writeLog('历史数据解析错误:', error);
   }
-  const originalData: Array<{Time: number; Value: any}> = data?.Data?.List?.PropertyInfo ?? [];
-  const parsedData: INotificationItem[] = [];
-  originalData
-    ?.sort((x, y) => y.Time - x.Time)
-    ?.forEach(({Value}) => {
-      try {
-        const railwayData = JSON.parse(Value) as RailWayState['value'];
-        if (
-          timeValid(railwayData.timestamp) &&
-          (railwayData.broken_state === 'broken' || railwayData.occupy_state === 'busy')
-        ) {
-          parsedData.push({
-            railName: device.name,
-            timestamp: railwayData.timestamp,
-            unRead: false,
-            description: `${device.name} ${railwayData.broken_state === 'broken' ? '断轨' : '被占用'}`,
-          });
-        }
-      } catch (error: unknown) {
-        helper.writeLog('历史数据解析错误:', error);
-      }
-    });
-  return parsedData.sort((x, y) => y.timestamp - x.timestamp);
+
+  return {
+    hasNext,
+    nextTime,
+    history: parsedData,
+  };
 }
 
 export function parseResponseData<T>({Success, Data}: {Success: boolean; Data: any}): {
