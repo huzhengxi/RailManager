@@ -11,10 +11,12 @@ import {EmptyView, HeaderRightButton, RoundView} from '../utils/lib';
 import {AppColor, AppStyles} from '../utils/styles';
 import {IDevice, StatusProps} from '../utils/types';
 import {updateDevice} from '../features/deviceListSlice';
-import {useEffect} from 'react';
+import {useCallback, useEffect} from 'react';
 import MqttClient from '../utils/mqttClient';
 import {timeFormat} from '../utils/TimeUtil';
 import Helper from '../utils/helper';
+import {refreshRecentlyDataFromServer} from '../services/notificationService';
+import {throttle} from 'lodash';
 
 export default function Home() {
   useTitle('轨道监测系统');
@@ -27,6 +29,7 @@ export default function Home() {
       MqttClient.connect((deviceData) => {
         dispatch(updateDevice(deviceData));
       });
+      refreshRecentlyDataFromServer();
     };
     freshData();
     AppState.addEventListener('change', (state) => {
@@ -61,6 +64,7 @@ export default function Home() {
   const renderItem: ListRenderItem<IDevice> = ({index, item}) => {
     return <DeviceItem item={item} index={index} navigation={navigation} />;
   };
+  const refreshData = useCallback(throttle(refreshRecentlyDataFromServer, 5000), []);
   return (
     <SafeAreaView style={{flex: 1}}>
       {devices.length === 0 && (
@@ -74,7 +78,7 @@ export default function Home() {
         />
       )}
       {devices.length > 0 && (
-        <FlatList refreshing={false} onRefresh={() => {}} data={devices} renderItem={renderItem} />
+        <FlatList refreshing={false} onRefresh={refreshData} data={devices} renderItem={renderItem} />
       )}
     </SafeAreaView>
   );
