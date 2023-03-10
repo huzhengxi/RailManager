@@ -16,6 +16,9 @@ const persistorGate = persistStore(store);
 export default function App() {
   useEffect(() => {
     Helper.clearLog();
+    if (__DEV__) {
+      return;
+    }
     startNotificationService();
   }, []);
   return (

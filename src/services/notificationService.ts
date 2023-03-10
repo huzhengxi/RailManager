@@ -98,7 +98,7 @@ const options = {
   },
   color: AppColor.green,
   parameters: {
-    delay: 10000,
+    delay: 30 * 1000,
   },
   linkingURI: 'com.anonymous.railManager:', // Add this
 };
