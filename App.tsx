@@ -8,6 +8,7 @@ import {Provider} from 'react-redux';
 import store from './src/store';
 import {PersistGate} from 'redux-persist/integration/react';
 import {persistStore} from 'redux-persist';
+import {Provider as AntDesignProvider} from '@ant-design/react-native'
 
 const persistorGate = persistStore(store);
 
@@ -16,18 +17,20 @@ export default function App() {
     Helper.clearLog();
   }, []);
   return (
-    <Provider store={store}>
-      <PersistGate loading={null} persistor={persistorGate}>
-        <NavigationContainer>
-          {/* 设置黑色模式 */}
-          <StatusBar barStyle={'dark-content'} />
+    <AntDesignProvider>
+      <Provider store={store}>
+        <PersistGate loading={null} persistor={persistorGate}>
+          <NavigationContainer>
+            {/* 设置黑色模式 */}
+            <StatusBar barStyle={'dark-content'}/>
 
-          <Stack.Navigator>
-            <Stack.Screen name={'/'} options={{headerShown: false}} component={BottomTabs} />
-            {createStack(NormalPage)}
-          </Stack.Navigator>
-        </NavigationContainer>
-      </PersistGate>
-    </Provider>
+            <Stack.Navigator>
+              <Stack.Screen name={'/'} options={{headerShown: false}} component={BottomTabs}/>
+              {createStack(NormalPage)}
+            </Stack.Navigator>
+          </NavigationContainer>
+        </PersistGate>
+      </Provider>
+    </AntDesignProvider>
   );
 }

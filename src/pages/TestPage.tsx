@@ -2,6 +2,7 @@ import {NativeModules, View} from 'react-native';
 import {useTitle} from '../hooks/navigation-hooks';
 import {useEffect} from 'react';
 import {AliIoTAPIClient} from '../utils/aliIotApiClient';
+import {Button, Modal} from "@ant-design/react-native";
 
 const {NotificationModule} = NativeModules;
 
@@ -30,6 +31,28 @@ export default function TestPage() {
         alignItems: 'center',
         justifyContent: 'center',
       }}
-    />
+    >
+      <Button onPress={()=> {
+        Modal.prompt(
+          '修改设备名称',
+          '',
+          [
+            {
+              text:'确定',
+              onPress:(...e:any)=> console.log('hello', e)
+            },
+            {
+              text:'取掉',
+              onPress:(e: any)=> console.log('取消', e)
+            }
+          ],
+          'default',
+          'hello',
+          ['hello', 'world']
+        )
+      }}>
+        Name
+      </Button>
+    </View>
   );
 }

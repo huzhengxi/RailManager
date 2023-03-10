@@ -13,6 +13,7 @@ import {ONE_DAY} from '../utils/define';
 import {addDevice} from '../features/deviceListSlice';
 import {useState} from 'react';
 import {Loading} from '../utils/lib';
+import {Modal} from "@ant-design/react-native";
 
 let scanBusy = false;
 
@@ -64,8 +65,29 @@ export default function AddDevice() {
         device.isUse = railwayState?.occupy_state === 'busy';
         device.status = railwayState?.broken_state;
         device.timestamp = railwayState?.timestamp;
-        dispatch(addDevice(device));
-        navigation.goBack();
+        Modal.prompt(
+          '添加成功',
+          '请修改设备名称',
+          [
+            {
+              text: '取掉',
+              onPress: (...e: any) => {
+                navigation.goBack();
+              }
+            },
+            {
+              text: '确定',
+              onPress: (...e: any) => {
+                device.name = e?.[0] ?? device.deviceId
+                dispatch(addDevice(device));
+                navigation.goBack();
+              }
+            },
+          ],
+          'default',
+          device.name || device.deviceId,
+        )
+
       } else {
         scanBusy = false;
       }
@@ -77,7 +99,7 @@ export default function AddDevice() {
   };
   return (
     <View style={{flex: 1}}>
-      {loading && <Loading />}
+      {loading && <Loading/>}
       {!loading && (
         <CameraScreen
           focusMode={'off'}
