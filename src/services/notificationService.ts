@@ -59,9 +59,9 @@ export function sendNotification(newDevice: IDevice, oldDevice: IDevice) {
   ) {
     //只有 status 和  isUse 不一样才会通知
     if (newDevice.status !== oldDevice.status || newDevice.isUse !== oldDevice.isUse) {
-      let desc = ` ${newDevice.name} ${newDevice.status === 'normal' ? '恢复正常' : '断轨'}`;
+      let desc = ` ${oldDevice.name} ${newDevice.status === 'normal' ? '恢复正常' : '断轨'}`;
       if (newDevice.isUse !== oldDevice.isUse) {
-        desc = `${newDevice.name} ${newDevice.isUse ? '被占用' : '空闲'}`;
+        desc = `${oldDevice.name} ${newDevice.isUse ? '被占用' : '空闲'}`;
       }
       helper.writeLog('数据更新，通知', desc);
       helper.writeLog('老数据:', oldDevice);
