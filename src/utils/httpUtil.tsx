@@ -12,23 +12,28 @@ export const useNotificationList = (devices?: IDevice[]) => {
   const [loading, setLoading] = useState(false);
   const [list, setList] = useState<INotificationItem[]>([]);
 
-  const refresh = useCallback(() => {
-    if (!devices || devices.length === 0) {
-      return;
-    }
-    setLoading(true);
-    const endTime = Date.now();
-    const startTime = endTime - ONE_DAY * 7;
-    const client = AliIoTAPIClient.getInstance();
-    client
-      .queryDeviceHistoryData(devices[0].deviceId, startTime, endTime, 'railway_state')
-      .then((data) => {
-        setList(parseNotificationData(data, devices[0], list).history);
-      })
-      .finally(() => {
-        setLoading(false);
-      });
-  }, [list]);
+  const refresh = useCallback(
+    (clearData = true) => {
+      if (!devices || devices.length === 0) {
+        return;
+      }
+
+      setLoading(true);
+      const endTime = Date.now();
+      const startTime = endTime - ONE_DAY * 7;
+      const client = AliIoTAPIClient.getInstance();
+      client
+        .queryDeviceHistoryData(devices[0].deviceId, startTime, endTime, 'railway_state')
+        .then((data) => {
+          setList(parseNotificationData(data, devices[0], clearData ? [] : list).history);
+        })
+        .finally(() => {
+          setLoading(false);
+        });
+    },
+    [list]
+  );
+
   useEffect(() => {
     refresh();
   }, []);
@@ -80,17 +85,18 @@ export const useRailUsingHistory = (device: IDevice, firstPageSize = 50) => {
 
   const refreshData = useCallback(
     (loading = false, pageSize = 50) => {
-      if (loading) {
-        setLoading(true);
-      }
       if (!hasNext) {
         return;
+      }
+      if (loading) {
+        setLoading(true);
       }
       const client = AliIoTAPIClient.getInstance();
       client
         .queryDeviceHistoryData(device.deviceId, startTime, endTime, 'train_state', pageSize)
         .then((data) => {
           const {history, hasNext, nextTime} = parseRailUsingData(data, list);
+          console.log('his', history.length, hasNext, nextTime);
           setList([...history]);
           setHasNext(hasNext);
           if (hasNext && nextTime) {
@@ -187,7 +193,7 @@ function parseRailUsingData(data: any, prevList: IRailUsingHistory[]): IHistory<
   }
 
   return {
-    hasNext,
+    hasNext: hasNext && prevList.length !== parsedData.length,
     nextTime,
     history: parsedData,
   };
@@ -217,7 +223,7 @@ function parseNotificationData(data: any, device: IDevice, prevList: INotificati
   }
 
   return {
-    hasNext,
+    hasNext: hasNext && parsedData.length !== parsedData.length,
     nextTime,
     history: parsedData,
   };

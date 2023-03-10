@@ -8,15 +8,22 @@ import {EmptyView, RoundView} from '../utils/lib';
 import {AppStyles} from '../utils/styles';
 import {IDevice, INotificationItem} from '../utils/types';
 import {useAppSelector} from '../store';
-import {useEffect} from 'react';
+import {useCallback, useEffect} from 'react';
 import {useNavigation} from '@react-navigation/native';
 import {timeFormat} from '../utils/TimeUtil';
+import {throttle} from 'lodash';
 
 export default function Notification() {
   useTitle('通知管理');
   const devices = useAppSelector<IDevice[]>((state) => state.deviceReducer);
   const {loading, data, refresh} = useNotificationList(devices);
   const navigation = useNavigation();
+  const refreshData = useCallback(
+    throttle(() => {
+      refresh(true);
+    }, 5000),
+    []
+  );
   useEffect(() => {
     navigation.addListener('focus', () => {
       refresh();
@@ -30,7 +37,7 @@ export default function Notification() {
       {(data.length > 0 || loading) && (
         <FlatList
           refreshing={loading}
-          onRefresh={() => {}}
+          onRefresh={refreshData}
           data={data}
           renderItem={renderItem}
           keyExtractor={(item, index) => `notification-keyExtractor-${item.timestamp}-${index}`}

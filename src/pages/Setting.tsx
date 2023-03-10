@@ -4,16 +4,13 @@
 import {Image, ImageSourcePropType, ScrollView, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
 import {useTitle} from '../hooks/navigation-hooks';
 import {RoundView} from '../utils/lib';
-import {FC, useEffect} from 'react';
-import Helper from '../utils/helper';
+import {FC} from 'react';
 import {useNavigation} from '@react-navigation/native';
+import DeviceInfo from 'react-native-device-info';
 
 export default function Setting() {
   useTitle('设置');
   const navigation = useNavigation();
-  useEffect(() => {
-    Helper.writeLog('进入设置页面');
-  }, []);
   return (
     <ScrollView>
       <RoundView>
@@ -35,7 +32,12 @@ export default function Setting() {
             navigation.navigate('/NotificationSetting');
           }}
         />
-        {/*<Item title={'温度单位'} icon={require('../../assets/unit.png')} split />*/}
+        <Item
+          title={'版本号'}
+          icon={require('../../assets/unit.png')}
+          split
+          value={`${DeviceInfo.getVersion()}( ${DeviceInfo.getBuildNumber()} )`}
+        />
         {__DEV__ && (
           <Item
             title='测试页面'
@@ -69,19 +71,23 @@ export const Item = (props: ItemProps) => {
     <TouchableOpacity activeOpacity={0.6} onPress={onPress}>
       <View style={styles.itemContainer}>
         <View style={styles.row}>
-          {props.icon && <Image source={icon} style={{height: 20, width: 20, resizeMode: 'contain'}}/>}
+          {props.icon && <Image source={icon} style={{height: 20, width: 20, resizeMode: 'contain'}} />}
           <Text style={styles.itemTitle}>{title}</Text>
         </View>
-        {!!RightView && <RightView/>}
+        {!!RightView && <RightView />}
         {!RightView && (
           <View style={{flexDirection: 'row', alignItems: 'center'}}>
-            {!!props.value && <Text>{props.value}</Text>}
-            {onPress && <Image source={require('../../assets/enter.png')}
-                               style={{height: 15, width: 20, resizeMode: 'contain'}}/>}
+            {!!props.value && <Text style={{color: 'gray'}}>{props.value}</Text>}
+            {onPress && (
+              <Image
+                source={require('../../assets/enter.png')}
+                style={{height: 15, width: 20, resizeMode: 'contain'}}
+              />
+            )}
           </View>
         )}
       </View>
-      {split && <View style={styles.line}/>}
+      {split && <View style={styles.line} />}
     </TouchableOpacity>
   );
 };
