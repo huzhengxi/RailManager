@@ -1,22 +1,19 @@
-import {NativeModules, View} from 'react-native';
+import {View} from 'react-native';
 import {useTitle} from '../hooks/navigation-hooks';
 import {useEffect} from 'react';
+import store from '../store';
+import {ONE_DAY} from '../utils/define';
+import {IDevice} from '../utils/types';
 import {AliIoTAPIClient} from '../utils/aliIotApiClient';
-import {Button, Modal} from "@ant-design/react-native";
-
-const {NotificationModule} = NativeModules;
 
 function test() {
-  // NotificationModule.startService();
-  const client = AliIoTAPIClient.getInstance();
-  client
-    .updateNickname('865714066701756', '区段1-1')
-    .then((result) => {
-      console.log('更新设备名称结果：', result);
-    })
-    .catch((error) => {
-      console.log('更新设备名称失败：', error);
-    });
+  const endTime = Date.now();
+  const startTime = endTime - ONE_DAY * 7;
+  const deviceList = store.getState().deviceReducer as IDevice[];
+  const aliApiClient = AliIoTAPIClient.getInstance();
+  aliApiClient.queryDeviceHistoryData(deviceList[0].deviceId, endTime, endTime + 10, 'railway_state', 1).then((res) => {
+    console.log('result:', JSON.stringify(res));
+  });
 }
 
 export default function TestPage() {
@@ -31,7 +28,6 @@ export default function TestPage() {
         alignItems: 'center',
         justifyContent: 'center',
       }}
-    >
-    </View>
+    />
   );
 }
