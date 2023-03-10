@@ -3,6 +3,7 @@
  */
 import BackgroundService from 'react-native-background-actions';
 import {AppColor} from "../utils/styles";
+import store from "../store";
 
 const sleep = (time: number) => new Promise<void>((resolve) => setTimeout(() => resolve(), time));
 
@@ -12,7 +13,7 @@ const veryIntensiveTask = async (taskDataArguments: any) => {
   // eslint-disable-next-line no-async-promise-executor
   await new Promise(async (resolve) => {
     for (let i = 0; BackgroundService.isRunning(); i++) {
-      console.log(i);
+      console.log(i, 'state:', store.getState());
       await BackgroundService.updateNotification({
         ...taskDataArguments,
         taskDesc: `hello${i}`,
@@ -23,9 +24,9 @@ const veryIntensiveTask = async (taskDataArguments: any) => {
 };
 
 const options = {
-  taskName: 'Example',
-  taskTitle: 'ExampleTask title',
-  taskDesc: 'ExampleTask description',
+  taskName: 'notificationService',
+  taskTitle: '',
+  taskDesc: '',
   taskIcon: {
     name: 'ic_launcher',
     type: 'mipmap',

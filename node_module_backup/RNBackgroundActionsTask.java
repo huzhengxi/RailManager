@@ -54,10 +54,13 @@ final public class RNBackgroundActionsTask extends HeadlessJsTaskService {
                 .setContentTitle(taskTitle)
                 .setContentText(taskDesc)
                 .setSmallIcon(iconInt)
+                .setTicker("")
                 .setSound(Settings.System.DEFAULT_NOTIFICATION_URI)
                 .setContentIntent(contentIntent)
                 .setOngoing(false)
-                .setPriority(NotificationCompat.PRIORITY_MIN)
+                .setWhen(System.currentTimeMillis())
+                .setPriority(NotificationCompat.PRIORITY_MAX)
+                .setDefaults(NotificationCompat.DEFAULT_ALL)
                 .setAutoCancel(true)
                 .setColor(color);
 
@@ -83,17 +86,8 @@ final public class RNBackgroundActionsTask extends HeadlessJsTaskService {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        final Bundle extras = intent.getExtras();
-        if (extras == null) {
-            throw new IllegalArgumentException("Extras cannot be null");
-        }
-        final BackgroundTaskOptions bgOptions = new BackgroundTaskOptions(extras);
-        createNotificationChannel(bgOptions.getTaskTitle(), bgOptions.getTaskDesc()); // Necessary creating channel for API 26+
-        // Create the notification
-        final Notification notification = buildNotification(this, bgOptions);
 
-        startForeground(SERVICE_NOTIFICATION_ID, notification);
-        return START_STICKY;
+        return super.onStartCommand(intent, flags, startId);
     }
 
     private void createNotificationChannel(@NonNull final String taskTitle, @NonNull final String taskDesc) {
