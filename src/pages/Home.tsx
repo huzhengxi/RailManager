@@ -21,17 +21,17 @@ export default function Home() {
   useTitle('轨道监测系统');
   const navigation = useNavigation();
   const devices = useAppSelector<IDevice[]>((state) => state.deviceReducer);
+  const freshData = useCallback(() => {
+    MqttClient.connect((deviceData) => {
+      const oldDevice = devices.find((d) => d.deviceId === deviceData.deviceId);
+      if (oldDevice) {
+        sendNotification(deviceData, oldDevice);
+      }
+    });
+    refreshRecentlyDataFromServer();
+  }, [devices]);
 
   useEffect(() => {
-    const freshData = () => {
-      MqttClient.connect((deviceData) => {
-        const oldDevice = devices.find((d) => d.deviceId === deviceData.deviceId);
-        if (oldDevice) {
-          sendNotification(deviceData, oldDevice);
-        }
-      });
-      refreshRecentlyDataFromServer();
-    };
     freshData();
     AppState.addEventListener('change', (state) => {
       Helper.writeLog('App change:', state);
