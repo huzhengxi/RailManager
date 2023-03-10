@@ -34,7 +34,7 @@ const options = {
   parameters: {
     delay: 5000,
   },
-  linkingURI: 'com.anonymous.railManager', // Add this
+  linkingURI: 'com.anonymous.railManager:', // Add this
 };
 
 export const startNotificationService = () => {
