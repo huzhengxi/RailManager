@@ -52,12 +52,13 @@ export const useTemperatureHistory = (device: IDevice) => {
     client
       .queryDeviceHistoryData(device.deviceId, startTime, endTime, 'railway_state')
       .then((data) => {
+        console.log('dd:', JSON.stringify(data))
         const {history, nextTime, isNext} = parseTemperatureData(list, data);
         setList([...history]);
+        console.log('History:', history);
         if (isNext && nextTime) {
           setEndtime(nextTime);
         } else {
-          console.log('History:', list);
           setLoading(false);
         }
       })

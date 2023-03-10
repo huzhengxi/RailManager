@@ -8,5 +8,7 @@ export const timeFormat = (timestamp: number, format: string): string => {
 };
 
 export const timeValid = (timestamp: number): boolean => {
-  return `${timestamp}`.length === 10;
+  const minTimestamp = Math.round(Date.now() / 1000) - 3600*24*7;
+  const maxTimestamp = Math.round(Date.now() / 1000)
+  return `${timestamp}`.length === 10 && timestamp >= minTimestamp && timestamp <= maxTimestamp;
 };
