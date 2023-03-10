@@ -2,12 +2,12 @@
  * Created by jason on 2023/3/8.
  */
 import BackgroundService from 'react-native-background-actions';
-import {AppColor} from "../utils/styles";
-import store from "../store";
+import {AppColor} from '../utils/styles';
+import store from '../store';
 
 const sleep = (time: number) => new Promise<void>((resolve) => setTimeout(() => resolve(), time));
 
-const veryIntensiveTask = async (taskDataArguments: any) => {
+const notificationTask = async (taskDataArguments: any) => {
   // Example of an infinite loop task
   const {delay} = taskDataArguments;
   // eslint-disable-next-line no-async-promise-executor
@@ -33,13 +33,13 @@ const options = {
   },
   color: AppColor.green,
   parameters: {
-    delay: 5000,
+    delay: 10000,
   },
   linkingURI: 'com.anonymous.railManager:', // Add this
 };
 
 export const startNotificationService = () => {
-  return BackgroundService.start(veryIntensiveTask, options);
+  return BackgroundService.start(notificationTask, options);
 };
 
 export const stopNotificationService = () => {

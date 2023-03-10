@@ -47,9 +47,6 @@ export const useTemperatureHistory = (device: IDevice) => {
   const [startTime, _] = useState(now.current - ONE_DAY * 7);
 
   useEffect(() => {
-    if (__DEV__) {
-      return
-    }
     setLoading(true);
     const client = AliIoTAPIClient.getInstance();
     client
@@ -81,50 +78,55 @@ export const useRailUsingHistory = (device: IDevice, firstPageSize = 50) => {
   const [startTime, _] = useState(now.current - ONE_DAY * 7);
   const [hasNext, setHasNext] = useState(true);
 
-  const refreshData = useCallback((loading: boolean = false, pageSize = 50) => {
-    if (loading) {
-      setLoading(true)
-    }
-    if (!hasNext) {
-      return
-    }
-    const client = AliIoTAPIClient.getInstance();
-    client
-      .queryDeviceHistoryData(device.deviceId, startTime, endTime, 'train_state', pageSize)
-      .then((data) => {
-        const {history, isNext, nextTime} = parseRailUsingData(data, list)
-        setList([...history]);
-        setHasNext(isNext)
-        if (isNext && nextTime) {
-          setEndTime(nextTime)
-        }
-      }).catch(error => {
-      helper.writeLog('获取数据失败', error)
-    }).finally(() => {
-      setLoading(false)
-    });
-  }, [list, endTime, hasNext])
+  const refreshData = useCallback(
+    (loading = false, pageSize = 50) => {
+      if (loading) {
+        setLoading(true);
+      }
+      if (!hasNext) {
+        return;
+      }
+      const client = AliIoTAPIClient.getInstance();
+      client
+        .queryDeviceHistoryData(device.deviceId, startTime, endTime, 'train_state', pageSize)
+        .then((data) => {
+          const {history, isNext, nextTime} = parseRailUsingData(data, list);
+          setList([...history]);
+          setHasNext(isNext);
+          if (isNext && nextTime) {
+            setEndTime(nextTime);
+          }
+        })
+        .catch((error) => {
+          helper.writeLog('获取数据失败', error);
+        })
+        .finally(() => {
+          setLoading(false);
+        });
+    },
+    [list, endTime, hasNext]
+  );
 
   useEffect(() => {
-    refreshData(true, firstPageSize)
+    refreshData(true, firstPageSize);
   }, [device.deviceId, device.productKey]);
   return {
     loading,
     data: list,
     hasNext,
-    refreshData
+    refreshData,
   };
 };
 
 function parseTemperatureData(
   prevList: ITempHistory[],
   data: any
-): { isNext: boolean, nextTime?: number, history: ITempHistory[] } {
+): {isNext: boolean; nextTime?: number; history: ITempHistory[]} {
   if (!data.Success) {
     helper.writeLog('请求失败', data);
     return {isNext: false, history: [...prevList]};
   }
-  const originalData: Array<{ Time: number; Value: any }> = data?.Data?.List?.PropertyInfo ?? [];
+  const originalData: Array<{Time: number; Value: any}> = data?.Data?.List?.PropertyInfo ?? [];
   const parsedData: ITempHistory[] = [...prevList];
   originalData
     ?.sort((x, y) => y.Time - x.Time)
@@ -159,12 +161,15 @@ function parseTemperatureData(
   };
 }
 
-function parseRailUsingData(data: any, prevList: IRailUsingHistory[]): { isNext: boolean, nextTime?: number, history: IRailUsingHistory[] } {
+function parseRailUsingData(
+  data: any,
+  prevList: IRailUsingHistory[]
+): {isNext: boolean; nextTime?: number; history: IRailUsingHistory[]} {
   if (!data.Success) {
     helper.writeLog('请求失败', data);
     return {isNext: false, history: [...prevList]};
   }
-  const originalData: Array<{ Time: number; Value: any }> = data?.Data?.List?.PropertyInfo ?? [];
+  const originalData: Array<{Time: number; Value: any}> = data?.Data?.List?.PropertyInfo ?? [];
   const parsedData: IRailUsingHistory[] = [...prevList];
   originalData
     ?.sort((x, y) => x.Time - x.Time)
@@ -199,9 +204,9 @@ function parseRailUsingData(data: any, prevList: IRailUsingHistory[]): { isNext:
     });
 
   return {
-    isNext: parsedData.length !== prevList.length && (data?.Data?.NextValid as boolean ?? false),
+    isNext: parsedData.length !== prevList.length && ((data?.Data?.NextValid as boolean) ?? false),
     nextTime: data?.Data?.NextTime ?? Date.now(),
-    history: parsedData
+    history: parsedData,
   };
 }
 
@@ -210,7 +215,7 @@ function parseNotificationData(data: any, device: IDevice): INotificationItem[] 
     helper.writeLog('请求失败', data);
     return [];
   }
-  const originalData: Array<{ Time: number; Value: any }> = data?.Data?.List?.PropertyInfo ?? [];
+  const originalData: Array<{Time: number; Value: any}> = data?.Data?.List?.PropertyInfo ?? [];
   const parsedData: INotificationItem[] = [];
   originalData
     ?.sort((x, y) => y.Time - x.Time)
