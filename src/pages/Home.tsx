@@ -5,29 +5,30 @@
 import {useNavigation} from '@react-navigation/native';
 import {AppState, FlatList, ListRenderItem, SafeAreaView, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
 import {useTitle, useUpdateOptions} from '../hooks/navigation-hooks';
-import {useAppDispatch, useAppSelector} from '../store';
+import {useAppSelector} from '../store';
 import AppUtil from '../utils/AppUtil';
 import {EmptyView, HeaderRightButton, RoundView} from '../utils/lib';
 import {AppColor, AppStyles} from '../utils/styles';
 import {IDevice, StatusProps} from '../utils/types';
-import {updateDevice} from '../features/deviceListSlice';
 import {useCallback, useEffect} from 'react';
 import MqttClient from '../utils/mqttClient';
 import {timeFormat} from '../utils/TimeUtil';
 import Helper from '../utils/helper';
-import {refreshRecentlyDataFromServer} from '../services/notificationService';
+import {refreshRecentlyDataFromServer, sendNotification} from '../services/notificationService';
 import {throttle} from 'lodash';
 
 export default function Home() {
   useTitle('轨道监测系统');
   const navigation = useNavigation();
-  const dispatch = useAppDispatch();
   const devices = useAppSelector<IDevice[]>((state) => state.deviceReducer);
 
   useEffect(() => {
     const freshData = () => {
       MqttClient.connect((deviceData) => {
-        dispatch(updateDevice(deviceData));
+        const oldDevice = devices.find((d) => d.deviceId === deviceData.deviceId);
+        if (oldDevice) {
+          sendNotification(deviceData, oldDevice);
+        }
       });
       refreshRecentlyDataFromServer();
     };

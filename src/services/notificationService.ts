@@ -42,31 +42,43 @@ export const refreshRecentlyDataFromServer = async () => {
         status: railwayData.broken_state,
         isUse: railwayData?.occupy_state === 'busy',
       };
+      sendNotification(newDevice, device);
       console.log('newDevice:', JSON.stringify(newDevice));
-      if (newDevice.status !== device.status || newDevice.isUse !== device.isUse) {
-        let desc = ` ${newDevice.name} ${newDevice.status === 'normal' ? '恢复正常' : '断轨'}`;
-        if (newDevice.isUse !== device.isUse) {
-          desc = `${newDevice.name} ${newDevice.isUse ? '被占用' : '空闲'}`;
-        }
-        helper.writeLog('数据更新，通知', desc);
-        helper.writeLog('老数据:', device);
-        helper.writeLog('新数据:', newDevice);
-        await BackgroundService.updateNotification({
-          ...options,
-          taskTitle: '轨道状态变化',
-          taskDesc: desc,
-        });
-        //通知
-        store.dispatch(updateDevice(newDevice));
-      } else {
-        console.log('新数据', JSON.stringify(newDevice));
-        console.log('老数据', JSON.stringify(device));
-      }
     }
   } catch (e) {
     console.log('通知服务异常', e);
   }
 };
+
+export function sendNotification(newDevice: IDevice, oldDevice: IDevice) {
+  if (
+    newDevice.status !== oldDevice.status ||
+    newDevice.isUse !== oldDevice.isUse ||
+    newDevice.timestamp !== oldDevice.timestamp ||
+    newDevice.temperature !== oldDevice.temperature
+  ) {
+    //只有 status 和  isUse 不一样才会通知
+    if (newDevice.status !== oldDevice.status || newDevice.isUse !== oldDevice.isUse) {
+      let desc = ` ${newDevice.name} ${newDevice.status === 'normal' ? '恢复正常' : '断轨'}`;
+      if (newDevice.isUse !== oldDevice.isUse) {
+        desc = `${newDevice.name} ${newDevice.isUse ? '被占用' : '空闲'}`;
+      }
+      helper.writeLog('数据更新，通知', desc);
+      helper.writeLog('老数据:', oldDevice);
+      helper.writeLog('新数据:', newDevice);
+      BackgroundService.updateNotification({
+        ...options,
+        taskTitle: '轨道状态变化',
+        taskDesc: desc,
+      });
+    }
+
+    store.dispatch(updateDevice(newDevice));
+  } else {
+    console.log('新数据', JSON.stringify(newDevice));
+    console.log('老数据', JSON.stringify(oldDevice));
+  }
+}
 
 function parseResponseData<T>(responseData: {Success: boolean; Data: any}): T | null {
   if (!responseData.Success) {
