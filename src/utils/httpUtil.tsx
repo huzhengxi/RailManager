@@ -138,7 +138,7 @@ function parseTemperatureData(prevList: ITempHistory[], data: any): IHistory<ITe
           // 如果已经存在的话，取最大值
           parsedData[newDateIndex] = {
             ...parsedData[newDateIndex],
-            temp: Math.max(parsedData[newDateIndex].temp, railwayData.temperature),
+            temp: railwayData.temperature,
           };
         } else {
           parsedData.push({
@@ -155,7 +155,7 @@ function parseTemperatureData(prevList: ITempHistory[], data: any): IHistory<ITe
   return {
     hasNext,
     nextTime,
-    history: parsedData,
+    history: parsedData.sort((a, b) => a.timestamp - b.timestamp),
   };
 }
 
