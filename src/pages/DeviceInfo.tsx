@@ -12,9 +12,9 @@ import {useNavigation} from '@react-navigation/native';
 export default function DeviceInfo() {
   const deviceTemp: IDevice = useRouteParams(['device']).device as IDevice;
   const devices = useAppSelector<IDevice[]>((state) => state.deviceReducer);
-  const device = devices.filter((d) => d.deviceId === deviceTemp.deviceId)![0];
+  const device = devices.filter((d) => d.deviceId === deviceTemp.deviceId)?.[0] || {};
 
-  useTitle(device.name || '设置页面');
+  useTitle(device?.name || '设置页面');
 
   const dispatch = useAppDispatch();
   const navigation = useNavigation();
@@ -42,7 +42,7 @@ export default function DeviceInfo() {
         <RoundView>
           <Item
             title={'设备名称'}
-            value={device.name}
+            value={device?.name}
             split
             onPress={() => {
               Modal.prompt(

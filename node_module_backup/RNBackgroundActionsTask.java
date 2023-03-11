@@ -11,6 +11,7 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.Settings;
+import android.util.Log;
 
 
 import androidx.annotation.NonNull;
@@ -90,7 +91,7 @@ final public class RNBackgroundActionsTask extends HeadlessJsTaskService {
         return super.onStartCommand(intent, flags, startId);
     }
 
-    private void createNotificationChannel(@NonNull final String taskTitle, @NonNull final String taskDesc) {
+    public void createNotificationChannel(@NonNull final String taskTitle, @NonNull final String taskDesc) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             final int importance = NotificationManager.IMPORTANCE_DEFAULT;
             final NotificationChannel channel = new NotificationChannel(CHANNEL_ID, taskTitle, importance);

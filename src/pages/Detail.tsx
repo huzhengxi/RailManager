@@ -12,7 +12,7 @@ import {AppColor, AppStyles} from '../utils/styles';
 import {IDevice, ITempHistory} from '../utils/types';
 import {UsingHistory} from './RailUsingHistory';
 import {timeFormat} from '../utils/TimeUtil';
-import {useAppSelector} from "../store";
+import {useAppSelector} from '../store';
 
 const screenWidth = Dimensions.get('window').width;
 
@@ -20,12 +20,12 @@ export default function Detail() {
   let device: IDevice = useRouteParams(['device']).device as IDevice;
   const {timestamp} = device;
   const {data: temperatureHistoryData = [], loading: tempHisLoading} = useTemperatureHistory(device);
-  const {data: railUsingHistoryData = [], loading: railUsingLoading } = useRailUsingHistory(device, 20);
+  const {data: railUsingHistoryData = [], loading: railUsingLoading} = useRailUsingHistory(device, 20);
   const navigation = useNavigation();
   const devices = useAppSelector<IDevice[]>((state) => state.deviceReducer);
-  device = devices.filter(d=>d.deviceId === device.deviceId)![0]
+  device = devices.filter((d) => d.deviceId === device.deviceId)?.[0] || {};
 
-  useTitle(device.name || '');
+  useTitle(device?.name || '');
 
   useUpdateOptions({
     headerRight: () => {
@@ -61,7 +61,7 @@ export default function Detail() {
           // @ts-ignore
           navigation.navigate('/RailUsingHistory', {device});
         }}>
-        <UsingHistory data={railUsingHistoryData} loading={railUsingLoading} renderTitle  />
+        <UsingHistory data={railUsingHistoryData} loading={railUsingLoading} renderTitle />
       </TouchableOpacity>
     </View>
   );
