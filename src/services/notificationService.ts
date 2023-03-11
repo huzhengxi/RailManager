@@ -9,6 +9,7 @@ import {ONE_DAY} from '../utils/define';
 import {AliIoTAPIClient} from '../utils/aliIotApiClient';
 import {updateDevice} from '../features/deviceListSlice';
 import helper from '../utils/helper';
+import {checkNotifications, requestNotifications} from 'react-native-permissions';
 
 const sleep = (time: number) => new Promise<void>((resolve) => setTimeout(() => resolve(), time));
 
@@ -67,7 +68,7 @@ export function sendNotification(newDevice: IDevice, oldDevice: IDevice) {
       helper.writeLog('老数据:', oldDevice);
       helper.writeLog('新数据:', newDevice);
       BackgroundService.updateNotification({
-        ...options,
+        ...notificationOptions,
         taskTitle: '轨道状态变化',
         taskDesc: desc,
       });
@@ -106,7 +107,7 @@ const notificationTask = async (taskDataArguments: any) => {
   }
 };
 
-const options = {
+export const notificationOptions = {
   taskName: 'notificationService',
   taskTitle: '',
   taskDesc: '',
@@ -122,9 +123,27 @@ const options = {
 };
 
 export const startNotificationService = () => {
-  return BackgroundService.start(notificationTask, options);
+  checkNotificationPermission();
+  return BackgroundService.start(notificationTask, notificationOptions);
 };
 
 export const stopNotificationService = () => {
   return BackgroundService.stop();
+};
+
+export const checkNotificationPermission = () => {
+  checkNotifications().then((result) => {
+    helper.writeLog('通知权限:', result);
+  });
+  requestNotifications([
+    'alert',
+    'badge',
+    'sound',
+    'carPlay',
+    'criticalAlert',
+    'provisional',
+    'providesAppSettings',
+  ]).then((result) => {
+    console.log('result', result);
+  });
 };
