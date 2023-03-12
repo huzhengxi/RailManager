@@ -231,7 +231,7 @@ function parseNotificationData(data: any, device: IDevice, prevList: INotificati
   }
 
   return {
-    hasNext: hasNext && parsedData.length !== parsedData.length,
+    hasNext: hasNext && history.length !== parsedData.length,
     nextTime,
     history: parsedData,
   };
