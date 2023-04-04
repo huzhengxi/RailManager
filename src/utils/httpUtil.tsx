@@ -6,7 +6,7 @@ import {AliIoTAPIClient} from './aliIotApiClient';
 import {ONE_DAY} from './define';
 import helper from './helper';
 import {IDevice, IHistory, INotificationItem, IRailUsingHistory, ITempHistory, RailWayState, TrainState} from './types';
-import {timeFormat, timeValid} from './TimeUtil';
+import {timeFormat, timeValid, valueValid} from './TimeUtil';
 
 export const useNotificationList = (devices?: IDevice[]) => {
   const [loading, setLoading] = useState(false);
@@ -54,20 +54,27 @@ export const useTemperatureHistory = (device: IDevice) => {
   useEffect(() => {
     setLoading(true);
     const client = AliIoTAPIClient.getInstance();
-    client
-      .queryDeviceHistoryData(device.deviceId, startTime, endTime, 'railway_state')
-      .then((data) => {
-        const {history, nextTime, hasNext} = parseTemperatureData(list, data);
-        setList([...history]);
-        if (hasNext && nextTime) {
-          setEndTime(nextTime);
-        } else {
+    try {
+      client
+        .queryDeviceHistoryData(device.deviceId, startTime, endTime, 'railway_state')
+        .then((data) => {
+          const {history, nextTime, hasNext} = parseTemperatureData(list, data);
+          setList([...history]);
+          console.log('his', history, nextTime, hasNext)
+          if (hasNext && nextTime) {
+            setEndTime(nextTime);
+          } else {
+            setLoading(false);
+          }
+        })
+        .catch((error) => {
           setLoading(false);
-        }
-      })
-      .catch((error) => {
-        setLoading(false);
-      });
+        });
+    }catch (e) {
+      setList([])
+      setLoading(false);
+    }
+
   }, [endTime]);
   return {
     loading,
@@ -130,6 +137,7 @@ function parseTemperatureData(prevList: ITempHistory[], data: any): IHistory<ITe
   try {
     history
       .filter(({timestamp}) => timeValid(timestamp))
+      .filter(({temperature})=> valueValid(temperature))
       .sort((a, b) => a.timestamp - b.timestamp)
       .map((railwayData) => {
         const newDate = timeFormat(railwayData.timestamp, 'M/DD');

@@ -123,8 +123,14 @@ export const notificationOptions = {
 };
 
 export const startNotificationService = () => {
-  checkNotificationPermission();
-  return BackgroundService.start(notificationTask, notificationOptions);
+  try {
+    checkNotificationPermission();
+    return BackgroundService.start(notificationTask, notificationOptions);
+    // @ts-ignore
+  }catch (e: Error) {
+    helper.writeLog('startNotificationService failed:', e.toString())
+  }
+
 };
 
 export const stopNotificationService = () => {
