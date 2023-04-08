@@ -35,7 +35,7 @@ export default function NotificationSetting() {
                   setOn(BackgroundService.isRunning());
                 });
               } else {
-                startNotificationService().finally(() => {
+                startNotificationService?.()?.finally(() => {
                   setOn(BackgroundService.isRunning());
                 });
               }

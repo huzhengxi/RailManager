@@ -12,6 +12,7 @@
   },
   "plugins": ["@typescript-eslint", "prettier"],
   "rules": {
+    "no-console": "off",
     "prettier/prettier": "warn",
     "no-case-declarations": "off",
     "no-constant-condition": "off",

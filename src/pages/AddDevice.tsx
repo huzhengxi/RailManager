@@ -6,14 +6,15 @@ import {CameraScreen} from 'react-native-camera-kit';
 import {useTitle} from '../hooks/navigation-hooks';
 import {useAppDispatch} from '../store';
 import Helper from '../utils/helper';
-import {IDevice, RailWayState} from '../utils/types';
+import {IQRCode, IRailway, RailWayEvent, RailwayData} from '../utils/types';
 import {useNavigation} from '@react-navigation/native';
 import {AliIoTAPIClient} from '../utils/aliIotApiClient';
 import {ONE_DAY} from '../utils/define';
 import {addDevice} from '../features/deviceListSlice';
 import {useState} from 'react';
 import {Loading} from '../utils/lib';
-import {Modal} from "@ant-design/react-native";
+import {Modal} from '@ant-design/react-native';
+import {parseResponseData} from '../utils/httpUtil';
 
 let scanBusy = false;
 
@@ -30,64 +31,57 @@ export default function AddDevice() {
     scanBusy = true;
     Helper.writeLog('readCode:', event.nativeEvent.codeStringValue);
     try {
-      const device = JSON.parse(event.nativeEvent.codeStringValue) as IDevice;
-      if (device.deviceId && device.productKey) {
+      const qrCode = JSON.parse(event.nativeEvent.codeStringValue) as IQRCode;
+      if (qrCode.id) {
         setLoading(true);
         const queryClient = AliIoTAPIClient.getInstance();
-        const deviceDetail = await queryClient.queryDeviceDetail(device.deviceId);
-        if (!deviceDetail.Success) {
-          Helper.writeLog('获取设备详情失败', deviceDetail);
-          Alert.alert('添加失败', '获取设备详情失败');
-          navigation.goBack();
-          return;
-        }
-        device.name = deviceDetail?.Data?.Nickname ?? device.deviceId;
-        device.productKey = deviceDetail?.Data?.ProductKey;
-        Helper.writeLog('设备详情:', deviceDetail);
+        const device: IRailway = {
+          railwayId: qrCode.id,
+          name: '轨道名称',
+          timestamp: 0,
+          isBroken: false,
+          isOccupied: false,
+        };
         const endTime = Date.now();
         const startTime = endTime - ONE_DAY * 7;
-        const currentData = await queryClient.queryDeviceHistoryData(
-          device.deviceId,
-          startTime,
-          endTime,
-          'railway_state',
-          1
-        );
-        if (!currentData.Success) {
-          Helper.writeLog('获取最近一条数据失败：', currentData);
-          navigation.goBack();
-          return;
+        const responseData = await queryClient.queryDeviceHistoryData(startTime, endTime, 'railway_data', 50);
+        if (!responseData.Success) {
+          Helper.writeLog('最近一条数据,', responseData);
+          const {history} = parseResponseData<RailwayData>(responseData);
+          const findRailway = history.find(({railway_id}) => railway_id === device.railwayId);
+          if (findRailway) {
+            Helper.writeLog('railwayState:', findRailway);
+            device.temperature = findRailway.temperature;
+            device.isOccupied = findRailway.is_occupied;
+            device.isBroken = findRailway.is_broken;
+            device.timestamp = findRailway.timestamp;
+          }
+        } else {
+          Helper.writeLog('获取最近一条数据失败');
         }
-        Helper.writeLog('最近一条数据,', currentData);
-        const railwayState = JSON.parse(currentData?.Data?.List?.PropertyInfo?.[0]?.Value) as RailWayState['value'];
-        Helper.writeLog('railwayState:', railwayState);
-        device.temperature = railwayState?.temperature;
-        device.isUse = railwayState?.occupy_state === 'busy';
-        device.status = railwayState?.broken_state;
-        device.timestamp = railwayState?.timestamp;
+
         Modal.prompt(
           '添加成功',
           '请修改设备名称',
           [
             {
-              text: '取掉',
+              text: '取消',
               onPress: (...e: any) => {
                 navigation.goBack();
-              }
+              },
             },
             {
               text: '确定',
               onPress: (...e: any) => {
-                device.name = e?.[0] ?? device.deviceId
+                device.name = e?.[0] ?? device.railwayId;
                 dispatch(addDevice(device));
                 navigation.goBack();
-              }
+              },
             },
           ],
           'default',
-          device.name || device.deviceId,
-        )
-
+          device.name || device.railwayId
+        );
       } else {
         scanBusy = false;
       }
@@ -99,7 +93,7 @@ export default function AddDevice() {
   };
   return (
     <View style={{flex: 1}}>
-      {loading && <Loading/>}
+      {loading && <Loading />}
       {!loading && (
         <CameraScreen
           focusMode={'off'}
@@ -109,11 +103,17 @@ export default function AddDevice() {
           onReadCode={onSuccess}
           showFrame
           laserColor={'green'}
-          frameColor='green' cameraRatioOverlay={undefined} captureButtonImage={undefined}
-          captureButtonImageStyle={{}} cameraFlipImage={undefined} cameraFlipImageStyle={{}}
-          torchOnImage={undefined} torchOffImage={undefined} torchImageStyle={{}}
-          onBottomButtonPressed={function (event: any): void {
-          }}/>
+          frameColor='green'
+          cameraRatioOverlay={undefined}
+          captureButtonImage={undefined}
+          captureButtonImageStyle={{}}
+          cameraFlipImage={undefined}
+          cameraFlipImageStyle={{}}
+          torchOnImage={undefined}
+          torchOffImage={undefined}
+          torchImageStyle={{}}
+          onBottomButtonPressed={function (event: any): void {}}
+        />
       )}
     </View>
   );

@@ -1,18 +1,17 @@
 /**
  * Created by jason on 2022/9/12.
  */
-import {DeviceStatus} from './types';
 import {AppColor} from './styles';
 
 /**
  * 获取轨道状态颜色  正常为绿色，异常为红色
- * @param status
+ * @param isNormal
  */
-const getDeviceStatusColor = (status?: DeviceStatus) => {
-  if (status === 'broken') {
-    return AppColor.red;
+const getDeviceStatusColor = (isNormal: boolean) => {
+  if (isNormal) {
+    return AppColor.green;
   }
-  return AppColor.green;
+  return AppColor.red;
 };
 
 /**

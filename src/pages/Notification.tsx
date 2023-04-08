@@ -6,7 +6,7 @@ import {useTitle} from '../hooks/navigation-hooks';
 import {useNotificationList} from '../utils/httpUtil';
 import {EmptyView, RoundView} from '../utils/lib';
 import {AppStyles} from '../utils/styles';
-import {IDevice, INotificationItem} from '../utils/types';
+import {IRailway, INotificationItem} from '../utils/types';
 import {useAppSelector} from '../store';
 import {useCallback, useEffect} from 'react';
 import {useNavigation} from '@react-navigation/native';
@@ -15,7 +15,7 @@ import {throttle} from 'lodash';
 
 export default function Notification() {
   useTitle('通知管理');
-  const devices = useAppSelector<IDevice[]>((state) => state.deviceReducer);
+  const devices = useAppSelector<IRailway[]>((state) => state.deviceReducer);
   const {loading, data, refresh} = useNotificationList(devices);
   const navigation = useNavigation();
   const refreshData = useCallback(
@@ -48,7 +48,7 @@ export default function Notification() {
 }
 
 const renderItem: ListRenderItem<INotificationItem> = ({index, item}) => {
-  const {railName, timestamp, description, unRead} = item;
+  const {timestamp, description, unRead} = item;
 
   return (
     <RoundView key={`notification-item-${item.timestamp}-${index}`}>

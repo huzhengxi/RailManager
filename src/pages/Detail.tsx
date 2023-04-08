@@ -9,7 +9,7 @@ import AppUtil from '../utils/AppUtil';
 import {useRailUsingHistory, useTemperatureHistory} from '../utils/httpUtil';
 import {EmptyView, HeaderRightButton, Loading, RoundView} from '../utils/lib';
 import {AppColor, AppStyles} from '../utils/styles';
-import {IDevice, ITempHistory} from '../utils/types';
+import {IRailway, ITempHistory} from '../utils/types';
 import {UsingHistory} from './RailUsingHistory';
 import {timeFormat} from '../utils/TimeUtil';
 import {useAppSelector} from '../store';
@@ -17,13 +17,13 @@ import {useAppSelector} from '../store';
 const screenWidth = Dimensions.get('window').width;
 
 export default function Detail() {
-  let device: IDevice = useRouteParams(['device']).device as IDevice;
+  let device: IRailway = useRouteParams(['device']).device as IRailway;
   const {timestamp} = device;
   const {data: temperatureHistoryData = [], loading: tempHisLoading} = useTemperatureHistory(device);
   const {data: railUsingHistoryData = [], loading: railUsingLoading} = useRailUsingHistory(device, 20);
   const navigation = useNavigation();
-  const devices = useAppSelector<IDevice[]>((state) => state.deviceReducer);
-  device = devices.filter((d) => d.deviceId === device.deviceId)?.[0] || {};
+  const devices = useAppSelector<IRailway[]>((state) => state.deviceReducer);
+  device = devices.filter((d) => d.railwayId === device.railwayId)?.[0] || {};
 
   useTitle(device?.name || '');
 
@@ -67,19 +67,19 @@ export default function Detail() {
   );
 }
 
-const DeviceStatus = ({device}: {device: IDevice}) => {
-  const {status, isUse, temperature} = device;
+const DeviceStatus = ({device}: {device: IRailway}) => {
+  const {isBroken, isOccupied, temperature} = device;
   return (
     <RoundView style={{padding: 15}}>
       <View style={[AppStyles.row, {justifyContent: 'space-between'}]}>
         {/* 轨道状态 */}
         <Item
           title={'状态'}
-          value={status === 'normal' ? '良好' : '断轨'}
-          backgroundColor={AppUtil.getDeviceStatusColor(status)}
+          value={isBroken ? '断轨' : '良好'}
+          backgroundColor={AppUtil.getDeviceStatusColor(isBroken)}
         />
         {/* 是否占用 */}
-        <Item value={isUse ? '占用中' : '未占用'} backgroundColor={AppUtil.getDeviceUsingColor(isUse || false)} />
+        <Item value={isOccupied ? '占用中' : '未占用'} backgroundColor={AppUtil.getDeviceUsingColor(isOccupied)} />
         <Item
           value={`${temperature?.toFixed(1)}°`}
           title={'温度'}
@@ -107,10 +107,10 @@ const Item = ({
 
 const TempHistory = ({data = [], loading}: {data: ITempHistory[]; loading: boolean}) => {
   const chartData = {
-    labels: data.map(({timestamp}, _) => timeFormat(timestamp, 'M/DD')) || [],
+    labels: data.map(({timestamp}) => timeFormat(timestamp, 'M/DD')) || [],
     datasets: [
       {
-        data: data.map(({temp}, _) => temp) || [],
+        data: data.map(({temp}) => temp) || [],
         color: (opacity = 1) => `rgba(134, 65, 244, ${opacity})`,
       },
     ],

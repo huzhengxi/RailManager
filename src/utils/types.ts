@@ -2,9 +2,12 @@
  * Created by jason on 2022/9/12.
  */
 
-/**
- * 通知定义
- */
+/** 二维码信息 */
+export interface IQRCode {
+  id: string;
+}
+
+/** 通知定义 */
 export interface INotificationItem {
   /**轨道名称 */
   railName: string;
@@ -16,25 +19,19 @@ export interface INotificationItem {
   unRead: boolean;
 }
 
-/**
- * 设备定义
- */
-export type DeviceStatus = 'normal' | 'broken' | 'busy';
-
-export interface IDevice {
-  productKey: string;
+export interface IRailway {
   /**id */
-  readonly deviceId: string;
+  readonly railwayId: string;
   /**轨道名称 */
   name: string;
   /**数据更新时间 */
-  timestamp?: number;
-  /**状态：良好、断轨 */
-  status?: DeviceStatus;
+  timestamp: number;
+  /**状态：是否断轨 */
+  isBroken: boolean;
   /**轨道温度 */
   temperature?: number;
   /**轨道是否占用 */
-  isUse?: boolean;
+  isOccupied: boolean;
 }
 
 /**
@@ -46,13 +43,12 @@ export interface StatusProps {
   /**状态值 */
   text: string;
   /**状态 */
-  status?: DeviceStatus;
+  isNormal?: boolean;
 }
 
 /**
  * 温度历史数据定义
  */
-
 export interface ITempHistory {
   timestamp: number;
   temp: number;
@@ -75,37 +71,49 @@ export interface IRailUsingHistory {
 /**
  * mqtt 消息定义
  */
-
 export interface MqttDeviceData {
   requestId: string;
   productKey: string;
   deviceName: string;
   items: {
-    railway_state: RailWayState;
-    train_state: TrainState;
+    railway_data?: MqttDataItem<RailwayData>;
+    railway_event?: MqttDataItem<RailWayEvent>;
+    train_data?: MqttDataItem<TrainData>;
   };
 }
 
-export interface RailWayState {
+interface MqttDataItem<T> {
   time: number;
-  value: {
-    broken_state: DeviceStatus;
-    occupy_state: DeviceStatus;
-    temperature: number;
-    timestamp: number;
-  };
+  value: T;
 }
 
-export interface TrainState {
-  time: number;
-  value: {
-    axis_number: number;
-    enter_or_exit: 'train_in' | 'train_out';
-    timestamp: number;
-  };
+export interface RailwayData {
+  readonly railway_id: string;
+
+  /** 是否断轨 */
+  is_broken: boolean;
+  /** 是否被占用 */
+  is_occupied: boolean;
+  /** 温度 */
+  temperature: number;
+  /** 时间戳 */
+  timestamp: number;
 }
 
-export type Identifier = 'railway_state' | 'train_state';
+export interface RailWayEvent {
+  readonly railway_id: string;
+  type: 'train_enter' | 'train_leave' | 'railway_broken' | 'railway_unbroken';
+  timestamp: number;
+}
+
+export interface TrainData {
+  readonly railway_id: string;
+  axis_number: number;
+  enter_timestamp: number;
+  leave_timestamp: number;
+}
+
+export type Identifier = 'railway_event' | 'train_data' | 'railway_data';
 
 export interface IHistory<T> {
   hasNext: boolean;

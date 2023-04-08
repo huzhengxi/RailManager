@@ -2,7 +2,7 @@
  * Created by jason on 2022/9/12.
  */
 import {ActivityIndicator, FlatList, Image, ListRenderItem, StyleSheet, Text, View} from 'react-native';
-import {IDevice, IRailUsingHistory, RailUsingHistoryDateType} from '../utils/types';
+import {IRailway, IRailUsingHistory, RailUsingHistoryDateType} from '../utils/types';
 import {useRouteParams, useTitle} from '../hooks/navigation-hooks';
 import {EmptyView, Loading, RoundView} from '../utils/lib';
 import {AppColor, AppStyles} from '../utils/styles';
@@ -11,7 +11,7 @@ import {useRailUsingHistory} from '../utils/httpUtil';
 
 export default function RailUsingHistory() {
   useTitle('轨道占用历史');
-  const device: IDevice = useRouteParams(['device']).device as IDevice;
+  const device: IRailway = useRouteParams(['device']).device as IRailway;
   const {data: railUsingHistoryData = [], loading, hasNext, refreshData} = useRailUsingHistory(device);
   return (
     <UsingHistory

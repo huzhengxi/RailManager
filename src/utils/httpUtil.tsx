@@ -5,10 +5,19 @@ import {useCallback, useEffect, useRef, useState} from 'react';
 import {AliIoTAPIClient} from './aliIotApiClient';
 import {ONE_DAY} from './define';
 import helper from './helper';
-import {IDevice, IHistory, INotificationItem, IRailUsingHistory, ITempHistory, RailWayState, TrainState} from './types';
+import {
+  IRailway,
+  IHistory,
+  INotificationItem,
+  IRailUsingHistory,
+  ITempHistory,
+  RailWayEvent,
+  TrainData,
+  RailwayData,
+} from './types';
 import {timeFormat, timeValid, valueValid} from './TimeUtil';
 
-export const useNotificationList = (devices?: IDevice[]) => {
+export const useNotificationList = (devices?: IRailway[]) => {
   const [loading, setLoading] = useState(false);
   const [list, setList] = useState<INotificationItem[]>([]);
 
@@ -20,12 +29,12 @@ export const useNotificationList = (devices?: IDevice[]) => {
 
       setLoading(true);
       const endTime = Date.now();
-      const startTime = endTime - ONE_DAY * 7;
+      const startTime = endTime - ONE_DAY * 2;
       const client = AliIoTAPIClient.getInstance();
       client
-        .queryDeviceHistoryData(devices[0].deviceId, startTime, endTime, 'railway_state')
+        .queryDeviceHistoryData(startTime, endTime, 'railway_event')
         .then((data) => {
-          setList(parseNotificationData(data, devices[0], clearData ? [] : list).history);
+          setList(parseNotificationData(devices, data, clearData ? [] : list).history);
         })
         .finally(() => {
           setLoading(false);
@@ -44,7 +53,7 @@ export const useNotificationList = (devices?: IDevice[]) => {
   };
 };
 
-export const useTemperatureHistory = (device: IDevice) => {
+export const useTemperatureHistory = (device: IRailway) => {
   const [loading, setLoading] = useState(false);
   const [list, setList] = useState<ITempHistory[]>([]);
   const now = useRef(Date.now());
@@ -56,11 +65,10 @@ export const useTemperatureHistory = (device: IDevice) => {
     const client = AliIoTAPIClient.getInstance();
     try {
       client
-        .queryDeviceHistoryData(device.deviceId, startTime, endTime, 'railway_state')
+        .queryDeviceHistoryData(startTime, endTime, 'railway_data')
         .then((data) => {
-          const {history, nextTime, hasNext} = parseTemperatureData(list, data);
+          const {history, nextTime, hasNext} = parseTemperatureData(device, list, data);
           setList([...history]);
-          console.log('his', history, nextTime, hasNext)
           if (hasNext && nextTime) {
             setEndTime(nextTime);
           } else {
@@ -69,12 +77,12 @@ export const useTemperatureHistory = (device: IDevice) => {
         })
         .catch((error) => {
           setLoading(false);
+          helper.writeLog('获取温度历史数据失败：', error);
         });
-    }catch (e) {
-      setList([])
+    } catch (e) {
+      setList([]);
       setLoading(false);
     }
-
   }, [endTime]);
   return {
     loading,
@@ -82,7 +90,7 @@ export const useTemperatureHistory = (device: IDevice) => {
   };
 };
 
-export const useRailUsingHistory = (device: IDevice, firstPageSize = 50) => {
+export const useRailUsingHistory = (device: IRailway, firstPageSize = 50) => {
   const [loading, setLoading] = useState(false);
   const [list, setList] = useState<IRailUsingHistory[]>([]);
   const now = useRef(Date.now());
@@ -100,9 +108,9 @@ export const useRailUsingHistory = (device: IDevice, firstPageSize = 50) => {
       }
       const client = AliIoTAPIClient.getInstance();
       client
-        .queryDeviceHistoryData(device.deviceId, startTime, endTime, 'train_state', pageSize)
+        .queryDeviceHistoryData(startTime, endTime, 'train_data', pageSize)
         .then((data) => {
-          const {history, hasNext, nextTime} = parseRailUsingData(data, list);
+          const {history, hasNext, nextTime} = parseRailUsingData(device, data, list);
           console.log('his', history.length, hasNext, nextTime);
           setList([...history]);
           setHasNext(hasNext);
@@ -122,7 +130,7 @@ export const useRailUsingHistory = (device: IDevice, firstPageSize = 50) => {
 
   useEffect(() => {
     refreshData(true, firstPageSize);
-  }, [device.deviceId, device.productKey]);
+  }, [device.railwayId]);
   return {
     loading,
     data: list,
@@ -131,13 +139,13 @@ export const useRailUsingHistory = (device: IDevice, firstPageSize = 50) => {
   };
 };
 
-function parseTemperatureData(prevList: ITempHistory[], data: any): IHistory<ITempHistory> {
-  const {history, nextTime, hasNext} = parseResponseData<RailWayState['value']>(data);
+function parseTemperatureData(device: IRailway, prevList: ITempHistory[], data: any): IHistory<ITempHistory> {
+  const {history, nextTime, hasNext} = parseResponseData<RailwayData>(data);
   const parsedData: ITempHistory[] = [...prevList];
   try {
     history
-      .filter(({timestamp}) => timeValid(timestamp))
-      .filter(({temperature})=> valueValid(temperature))
+      .filter(({railway_id}) => railway_id === device.railwayId)
+      .filter(({timestamp, temperature}) => timeValid(timestamp) && valueValid(temperature))
       .sort((a, b) => a.timestamp - b.timestamp)
       .map((railwayData) => {
         const newDate = timeFormat(railwayData.timestamp, 'M/DD');
@@ -167,34 +175,38 @@ function parseTemperatureData(prevList: ITempHistory[], data: any): IHistory<ITe
   };
 }
 
-function parseRailUsingData(data: any, prevList: IRailUsingHistory[]): IHistory<IRailUsingHistory> {
-  const {hasNext, nextTime, history} = parseResponseData<TrainState['value']>(data);
+function parseRailUsingData(device: IRailway, data: any, prevList: IRailUsingHistory[]): IHistory<IRailUsingHistory> {
+  const {hasNext, nextTime, history} = parseResponseData<TrainData>(data);
   const parsedData: IRailUsingHistory[] = [...prevList];
+  const processTrainData = (timeKey: 'enter_timestamp' | 'leave_timestamp', trainData: TrainData) => {
+    const timestamp = trainData[timeKey];
+    const newDate = timeFormat(timestamp, 'M/DD');
+    const newDateIndex = parsedData.findIndex(({date}) => newDate === date);
+    // 不存在日期的话，插入一条日期
+    if (newDateIndex === -1) {
+      parsedData.push({
+        timestamp,
+        type: 'date',
+        date: newDate,
+      });
+    }
+
+    parsedData.push({
+      timestamp,
+      type: 'history',
+      date: newDate,
+      using: timeKey === 'enter_timestamp',
+      description: timeKey === 'enter_timestamp' ? `轴数为 ${trainData.axis_number} 的列车进站` : '列车驶离，轨道空闲',
+    });
+  };
   try {
     history
-      .filter(({timestamp}) => timeValid(timestamp))
-      .sort((a, b) => b.timestamp - a.timestamp)
+      .filter(({railway_id}) => railway_id === device.railwayId)
+      .filter(({enter_timestamp, leave_timestamp}) => timeValid(enter_timestamp) && timeValid(leave_timestamp))
+      .sort((a, b) => b.enter_timestamp - a.enter_timestamp)
       .forEach((trainData) => {
-        const newDate = timeFormat(trainData.timestamp, 'M/DD');
-        const newDateIndex = parsedData.findIndex(({date}) => newDate === date);
-        // 不存在日期的话，插入一条日期
-        if (newDateIndex === -1) {
-          parsedData.push({
-            timestamp: trainData.timestamp,
-            type: 'date',
-            date: newDate,
-          });
-        }
-        parsedData.push({
-          timestamp: trainData.timestamp,
-          type: 'history',
-          date: newDate,
-          using: trainData.enter_or_exit === 'train_in',
-          description:
-            trainData.enter_or_exit === 'train_in'
-              ? `轴数为 ${trainData.axis_number} 的列车进站`
-              : '列车驶离，轨道空闲',
-        });
+        processTrainData('leave_timestamp', trainData);
+        processTrainData('enter_timestamp', trainData);
       });
   } catch (error) {
     helper.writeLog('历史数据解析错误:', error);
@@ -207,24 +219,29 @@ function parseRailUsingData(data: any, prevList: IRailUsingHistory[]): IHistory<
   };
 }
 
-function parseNotificationData(data: any, device: IDevice, prevList: INotificationItem[]): IHistory<INotificationItem> {
-  const {hasNext, nextTime, history} = parseResponseData<RailWayState['value']>(data);
+function parseNotificationData(
+  devices: IRailway[],
+  data: any,
+  prevList: INotificationItem[]
+): IHistory<INotificationItem> {
+  const {hasNext, nextTime, history} = parseResponseData<RailWayEvent>(data);
 
   const parsedData: INotificationItem[] = [...prevList];
   try {
     history
-      .filter(
-        ({timestamp, broken_state, occupy_state}) =>
-          timeValid(timestamp) && (broken_state === 'broken' || occupy_state === 'busy')
-      )
+      .filter(({railway_id}) => devices.findIndex(({railwayId}) => railwayId === railway_id) > -1)
+      .filter(({timestamp, type}) => timeValid(timestamp) && (type === 'railway_broken' || type === 'train_enter'))
       .sort((a, b) => b.timestamp - a.timestamp)
       .forEach((railwayData) => {
-        parsedData.push({
-          railName: device.name,
-          timestamp: railwayData.timestamp,
-          unRead: false,
-          description: `${device.name} ${railwayData.broken_state === 'broken' ? '断轨' : '被占用'}`,
-        });
+        const railway = devices.find(({railwayId}) => railwayId === railwayData.railway_id);
+        if (railway) {
+          parsedData.push({
+            railName: railway.name,
+            timestamp: railwayData.timestamp,
+            unRead: false,
+            description: `${railway.name} ${railwayData.type === 'train_enter' ? '被占用' : '断轨'}`,
+          });
+        }
       });
   } catch (error: unknown) {
     helper.writeLog('历史数据解析错误:', error);
@@ -249,11 +266,19 @@ export function parseResponseData<T>({Success, Data}: {Success: boolean; Data: a
     };
   }
 
+  const propertyInfo = (Data?.List?.PropertyInfo ?? []) as Array<{Value: string; Time: number}>;
+  const history: T[] = [];
+  propertyInfo.forEach((item) => {
+    try {
+      history.push(JSON.parse(item?.Value) as T);
+    } catch (error) {
+      helper.writeLog('解析数据错误');
+    }
+  });
+
   return {
     hasNext: Data?.NextValid ?? false,
     nextTime: Data?.NextTime ?? Date.now(),
-    history: ((Data?.List?.PropertyInfo ?? []) as Array<{Value: string; Time: number}>).map(
-      ({Value}) => JSON.parse(Value) as T
-    ),
+    history,
   };
 }
