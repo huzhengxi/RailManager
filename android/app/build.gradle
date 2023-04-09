@@ -72,7 +72,7 @@ android {
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode Integer.parseInt(new Date().format('yyyyMMddHH'))
-        versionName "0.1.2"
+        versionName "1.0.0"
         buildConfigField "boolean", "IS_NEW_ARCHITECTURE_ENABLED", isNewArchitectureEnabled().toString()
 
         if (isNewArchitectureEnabled()) {
@@ -197,7 +197,9 @@ android {
                 output.versionCodeOverride =
                         versionCodes.get(abi) * 1048576 + defaultConfig.versionCode
             }
-
+            def SEP = "_"
+            def version = variant.versionName
+            output.outputFileName = variant.name + SEP + version + SEP + variant.versionCode + '.apk'
         }
     }
 }
