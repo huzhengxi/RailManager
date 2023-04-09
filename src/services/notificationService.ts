@@ -38,6 +38,7 @@ export const refreshRecentlyDataFromServer = async () => {
         timestamp: Math.max(device.timestamp || 0, findDeviceData.timestamp),
         isBroken: findDeviceData.is_broken,
         isOccupied: findDeviceData.is_occupied,
+        temperature: findDeviceData.temperature,
       };
       sendNotification(newDevice, device);
       console.log('newDevice:', JSON.stringify(newDevice));
