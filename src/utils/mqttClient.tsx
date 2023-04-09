@@ -53,13 +53,17 @@ export default class MqttClient {
         const mqttData = JSON.parse(payload.toString()) as MqttDeviceData;
         if (mqttData.items?.railway_data) {
           const railwayData = mqttData.items.railway_data.value;
+          console.log('railwayData：', railwayData);
 
           updateData({
             railwayId: railwayData.railway_id,
             timestamp: railwayData.timestamp,
             isBroken: railwayData.is_broken,
             isOccupied: railwayData.is_occupied,
+            temperature: railwayData.temperature,
           } as const as IRailway);
+        } else {
+          console.log('不存在railway_data');
         }
       } catch (e: unknown) {
         helper.writeLog('jason数据转换失败：', e, payload.toString());

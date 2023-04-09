@@ -17,6 +17,7 @@ const sleep = (time: number) => new Promise<void>((resolve) => setTimeout(() => 
 // 从服务器获取最新数据
 export const refreshRecentlyDataFromServer = async () => {
   try {
+    console.log('refreshRecentlyDataFromServer');
     const aliApiClient = AliIoTAPIClient.getInstance();
     const deviceList = store.getState().deviceReducer as IRailway[];
     const endTime = Date.now();

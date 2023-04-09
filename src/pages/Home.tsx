@@ -65,7 +65,7 @@ export default function Home() {
   const renderItem: ListRenderItem<IRailway> = ({index, item}) => {
     return <DeviceItem item={item} index={index} navigation={navigation} />;
   };
-  const refreshData = useCallback(() => throttle(refreshRecentlyDataFromServer, 5000), []);
+  const refreshData = useCallback(throttle(refreshRecentlyDataFromServer, 5000), []);
   return (
     <SafeAreaView style={{flex: 1}}>
       {devices.length === 0 && (

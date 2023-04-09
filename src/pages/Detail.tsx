@@ -18,12 +18,12 @@ const screenWidth = Dimensions.get('window').width;
 
 export default function Detail() {
   let device: IRailway = useRouteParams(['device']).device as IRailway;
-  const {timestamp} = device;
   const {data: temperatureHistoryData = [], loading: tempHisLoading} = useTemperatureHistory(device);
   const {data: railUsingHistoryData = [], loading: railUsingLoading} = useRailUsingHistory(device, 20);
   const navigation = useNavigation();
   const devices = useAppSelector<IRailway[]>((state) => state.deviceReducer);
   device = devices.filter((d) => d.railwayId === device.railwayId)?.[0] || {};
+  const {timestamp} = device;
 
   useTitle(device?.name || '');
 
@@ -69,6 +69,7 @@ export default function Detail() {
 
 const DeviceStatus = ({device}: {device: IRailway}) => {
   const {isBroken, isOccupied, temperature} = device;
+  console.log('temperature:', device);
   return (
     <RoundView style={{padding: 15}}>
       <View style={[AppStyles.row, {justifyContent: 'space-between'}]}>
