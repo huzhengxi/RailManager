@@ -5,13 +5,13 @@ import {AppColor} from './styles';
 
 /**
  * 获取轨道状态颜色  正常为绿色，异常为红色
- * @param isNormal
+ * @param isAbnormal
  */
-const getDeviceStatusColor = (isNormal: boolean) => {
-  if (isNormal) {
-    return AppColor.green;
+const getDeviceStatusColor = (isAbnormal: boolean) => {
+  if (isAbnormal) {
+    return AppColor.red;
   }
-  return AppColor.red;
+  return AppColor.green;
 };
 
 /**

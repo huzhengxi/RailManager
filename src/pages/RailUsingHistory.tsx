@@ -58,7 +58,7 @@ export const UsingHistory = ({
             ListFooterComponent={() => (
               <View style={{height: 30, justifyContent: 'center', alignItems: 'center'}}>
                 {hasNext && <ActivityIndicator />}
-                {!hasNext && <Text style={{fontSize: 12, color: 'gray'}}>人家是有底线的啦！</Text>}
+                {!hasNext && <Text style={{fontSize: 12, color: 'gray'}}>已经到底啦！</Text>}
               </View>
             )}
             onEndReached={() => refreshData?.()}
