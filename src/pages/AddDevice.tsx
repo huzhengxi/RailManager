@@ -13,7 +13,8 @@ import {ONE_DAY} from '../utils/define';
 import {addDevice} from '../features/deviceListSlice';
 import {useState} from 'react';
 import {Loading} from '../utils/lib';
-import {Modal} from "@ant-design/react-native";
+import {Modal} from '@ant-design/react-native';
+import {ProductKey} from '../localconfig/config';
 
 let scanBusy = false;
 
@@ -31,7 +32,9 @@ export default function AddDevice() {
     Helper.writeLog('readCode:', event.nativeEvent.codeStringValue);
     try {
       const device = JSON.parse(event.nativeEvent.codeStringValue) as IDevice;
-      if (device.deviceId && device.productKey) {
+      device.productKey = ProductKey;
+      console.log('device:', device);
+      if (device.deviceId) {
         setLoading(true);
         const queryClient = AliIoTAPIClient.getInstance();
         const deviceDetail = await queryClient.queryDeviceDetail(device.deviceId);
@@ -73,23 +76,23 @@ export default function AddDevice() {
               text: '取掉',
               onPress: (...e: any) => {
                 navigation.goBack();
-              }
+              },
             },
             {
               text: '确定',
               onPress: (...e: any) => {
-                device.name = e?.[0] ?? device.deviceId
+                device.name = e?.[0] ?? device.deviceId;
                 dispatch(addDevice(device));
                 navigation.goBack();
-              }
+              },
             },
           ],
           'default',
-          device.name || device.deviceId,
-        )
-
+          device.name || device.deviceId
+        );
       } else {
         scanBusy = false;
+        Alert.alert('添加失败', '验证码不合法');
       }
     } catch (error) {
       Alert.alert('添加失败');
@@ -99,7 +102,7 @@ export default function AddDevice() {
   };
   return (
     <View style={{flex: 1}}>
-      {loading && <Loading/>}
+      {loading && <Loading />}
       {!loading && (
         <CameraScreen
           focusMode={'off'}
@@ -109,11 +112,17 @@ export default function AddDevice() {
           onReadCode={onSuccess}
           showFrame
           laserColor={'green'}
-          frameColor='green' cameraRatioOverlay={undefined} captureButtonImage={undefined}
-          captureButtonImageStyle={{}} cameraFlipImage={undefined} cameraFlipImageStyle={{}}
-          torchOnImage={undefined} torchOffImage={undefined} torchImageStyle={{}}
-          onBottomButtonPressed={function (event: any): void {
-          }}/>
+          frameColor='green'
+          cameraRatioOverlay={undefined}
+          captureButtonImage={undefined}
+          captureButtonImageStyle={{}}
+          cameraFlipImage={undefined}
+          cameraFlipImageStyle={{}}
+          torchOnImage={undefined}
+          torchOffImage={undefined}
+          torchImageStyle={{}}
+          onBottomButtonPressed={function (event: any): void {}}
+        />
       )}
     </View>
   );
