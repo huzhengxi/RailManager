@@ -2,46 +2,43 @@
  * Created by jason on 2023/3/8.
  */
 import BackgroundService from 'react-native-background-actions';
-import {AppColor} from '../utils/styles';
-import store from '../store';
-import {IDevice, RailWayState} from '../utils/types';
-import {ONE_DAY} from '../utils/define';
-import {AliIoTAPIClient} from '../utils/aliIotApiClient';
-import {updateDevice} from '../features/deviceListSlice';
-import helper from '../utils/helper';
 import {checkNotifications, requestNotifications} from 'react-native-permissions';
+import {updateDevice} from '../features/deviceListSlice';
+import store from '../store';
+import {AliIoTAPIClient} from '../utils/aliIotApiClient';
+import {ONE_DAY} from '../utils/define';
+import helper from '../utils/helper';
+import {AppColor} from '../utils/styles';
+import {IRailway, RailwayData} from '../utils/types';
+import {parseResponseData} from '../utils/httpUtil';
 
 const sleep = (time: number) => new Promise<void>((resolve) => setTimeout(() => resolve(), time));
 
 // 从服务器获取最新数据
 export const refreshRecentlyDataFromServer = async () => {
   try {
+    console.log('refreshRecentlyDataFromServer');
     const aliApiClient = AliIoTAPIClient.getInstance();
-    const deviceList = store.getState().deviceReducer as IDevice[];
+    const deviceList = store.getState().deviceReducer as IRailway[];
     const endTime = Date.now();
     const startTime = endTime - ONE_DAY * 7;
     console.log('deviceList:', deviceList);
-    for (const device of deviceList) {
-      const railDataResponse = await aliApiClient.queryDeviceHistoryData(
-        device.deviceId,
-        startTime,
-        endTime,
-        'railway_state',
-        1
-      );
-      console.log('railDataResponse:', JSON.stringify(railDataResponse));
-      const railwayData = parseResponseData<RailWayState['value']>(railDataResponse);
-      console.log('railwayData:', JSON.stringify(railwayData));
+    const railDataResponse = await aliApiClient.queryDeviceHistoryData(startTime, endTime, 'railway_data', 50);
+    const {history} = parseResponseData<RailwayData>(railDataResponse);
+    console.log('railDataResponse:', JSON.stringify(railDataResponse));
 
-      if (!railwayData) {
+    for (const device of deviceList) {
+      const findDeviceData = history.find(({railway_id}) => railway_id === device.railwayId);
+      if (!findDeviceData) {
         break;
       }
-
-      const newDevice: IDevice = {
+      console.log('railwayData:', JSON.stringify(findDeviceData));
+      const newDevice: IRailway = {
         ...device,
-        timestamp: Math.max(device.timestamp || 0, railwayData.timestamp),
-        status: railwayData.broken_state,
-        isUse: railwayData?.occupy_state === 'busy',
+        timestamp: Math.max(device.timestamp || 0, findDeviceData.timestamp),
+        isBroken: findDeviceData.is_broken,
+        isOccupied: findDeviceData.is_occupied,
+        temperature: findDeviceData.temperature,
       };
       sendNotification(newDevice, device);
       console.log('newDevice:', JSON.stringify(newDevice));
@@ -51,18 +48,18 @@ export const refreshRecentlyDataFromServer = async () => {
   }
 };
 
-export function sendNotification(newDevice: IDevice, oldDevice: IDevice) {
+export function sendNotification(newDevice: IRailway, oldDevice: IRailway) {
   if (
-    newDevice.status !== oldDevice.status ||
-    newDevice.isUse !== oldDevice.isUse ||
+    newDevice.isBroken !== oldDevice.isBroken ||
+    newDevice.isOccupied !== oldDevice.isOccupied ||
     newDevice.timestamp !== oldDevice.timestamp ||
     newDevice.temperature !== oldDevice.temperature
   ) {
     //只有 status 和  isUse 不一样才会通知
-    if (newDevice.status !== oldDevice.status || newDevice.isUse !== oldDevice.isUse) {
-      let desc = ` ${oldDevice.name} ${newDevice.status === 'normal' ? '恢复正常' : '断轨'}`;
-      if (newDevice.isUse !== oldDevice.isUse) {
-        desc = `${oldDevice.name} ${newDevice.isUse ? '被占用' : '空闲'}`;
+    if (newDevice.isBroken !== oldDevice.isBroken || newDevice.isOccupied !== oldDevice.isOccupied) {
+      let desc = ` ${oldDevice.name} ${newDevice.isBroken === false ? '恢复正常' : '断轨'}`;
+      if (newDevice.isOccupied !== oldDevice.isOccupied) {
+        desc = `${oldDevice.name} ${newDevice.isOccupied ? '被占用' : '空闲'}`;
       }
       helper.writeLog('数据更新，通知', desc);
       helper.writeLog('老数据:', oldDevice);
@@ -85,17 +82,6 @@ export function sendNotification(newDevice: IDevice, oldDevice: IDevice) {
     console.log('新数据', JSON.stringify(newDevice));
     console.log('老数据', JSON.stringify(oldDevice));
   }
-}
-
-function parseResponseData<T>(responseData: {Success: boolean; Data: any}): T | null {
-  if (!responseData.Success) {
-    return null;
-  }
-  const propertyInfo = responseData.Data?.List?.PropertyInfo ?? [];
-  if (propertyInfo.length === 0) {
-    return null;
-  }
-  return JSON.parse(propertyInfo[0].Value) as T;
 }
 
 const notificationTask = async (taskDataArguments: any) => {
@@ -127,10 +113,9 @@ export const startNotificationService = () => {
     checkNotificationPermission();
     return BackgroundService.start(notificationTask, notificationOptions);
     // @ts-ignore
-  }catch (e: Error) {
-    helper.writeLog('startNotificationService failed:', e.toString())
+  } catch (e: Error) {
+    helper.writeLog('startNotificationService failed:', e.toString());
   }
-
 };
 
 export const stopNotificationService = () => {

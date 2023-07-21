@@ -3,16 +3,17 @@ import {Alert, ScrollView, View} from 'react-native';
 import {useRouteParams, useTitle} from '../hooks/navigation-hooks';
 import {RoundView} from '../utils/lib';
 import {Item} from './Setting';
-import {IDevice} from '../utils/types';
+import {IRailway} from '../utils/types';
 import {Button, Modal} from '@ant-design/react-native';
 import {useAppDispatch, useAppSelector} from '../store';
 import {removeDevice, updateDevice} from '../features/deviceListSlice';
 import {useNavigation} from '@react-navigation/native';
+import {ProductKey} from '../localconfig/config';
 
 export default function DeviceInfo() {
-  const deviceTemp: IDevice = useRouteParams(['device']).device as IDevice;
-  const devices = useAppSelector<IDevice[]>((state) => state.deviceReducer);
-  const device = devices.filter((d) => d.deviceId === deviceTemp.deviceId)?.[0] || {};
+  const deviceTemp: IRailway = useRouteParams(['device']).device as IRailway;
+  const devices = useAppSelector<IRailway[]>((state) => state.deviceReducer);
+  const device = devices.filter((d) => d.railwayId === deviceTemp.railwayId)?.[0] || {};
 
   useTitle(device?.name || '设置页面');
 
@@ -69,8 +70,8 @@ export default function DeviceInfo() {
               );
             }}
           />
-          <Item title={'序列号'} value={device.deviceId} split />
-          <Item title={'PID'} value={device.productKey} />
+          <Item title={'序列号'} value={device.railwayId} split />
+          <Item title={'PID'} value={ProductKey} />
         </RoundView>
         <Button onPress={removeThisDevice} style={{marginBottom: 20, marginHorizontal: 20, borderColor: 'red'}}>
           删除

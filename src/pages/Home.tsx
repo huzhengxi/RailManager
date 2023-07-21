@@ -9,7 +9,7 @@ import {useAppSelector} from '../store';
 import AppUtil from '../utils/AppUtil';
 import {EmptyView, HeaderRightButton, RoundView} from '../utils/lib';
 import {AppColor, AppStyles} from '../utils/styles';
-import {IDevice, StatusProps} from '../utils/types';
+import {IRailway, StatusProps} from '../utils/types';
 import {useCallback, useEffect} from 'react';
 import MqttClient from '../utils/mqttClient';
 import {timeFormat} from '../utils/TimeUtil';
@@ -20,10 +20,10 @@ import {throttle} from 'lodash';
 export default function Home() {
   useTitle('轨道监测系统');
   const navigation = useNavigation();
-  const devices = useAppSelector<IDevice[]>((state) => state.deviceReducer);
+  const devices = useAppSelector<IRailway[]>((state) => state.deviceReducer);
   const freshData = useCallback(() => {
     MqttClient.connect((deviceData) => {
-      const oldDevice = devices.find((d) => d.deviceId === deviceData.deviceId);
+      const oldDevice = devices.find((d) => d.railwayId === deviceData.railwayId);
       if (oldDevice) {
         sendNotification(deviceData, oldDevice);
       }
@@ -62,7 +62,7 @@ export default function Home() {
     },
     [devices.length]
   );
-  const renderItem: ListRenderItem<IDevice> = ({index, item}) => {
+  const renderItem: ListRenderItem<IRailway> = ({index, item}) => {
     return <DeviceItem item={item} index={index} navigation={navigation} />;
   };
   const refreshData = useCallback(throttle(refreshRecentlyDataFromServer, 5000), []);
@@ -85,8 +85,8 @@ export default function Home() {
   );
 }
 
-const DeviceItem = ({index, item, navigation}: {index: number; item: IDevice; navigation: any}) => {
-  const {name, status, isUse, timestamp, temperature} = item;
+const DeviceItem = ({index, item, navigation}: {index: number; item: IRailway; navigation: any}) => {
+  const {name, isBroken, isOccupied, timestamp, temperature} = item;
   const onPress = () => {
     navigation.navigate('/Detail', {device: item});
   };
@@ -102,8 +102,8 @@ const DeviceItem = ({index, item, navigation}: {index: number; item: IDevice; na
 
           {/* 各种状态 */}
           <View style={[AppStyles.row, {justifyContent: 'space-between', marginTop: 15, width: '100%'}]}>
-            <Status title={'状态：'} text={status === 'normal' ? '良好' : '断轨'} status={status} />
-            <Status title={'是否占用：'} text={isUse ? '占用' : '未占用'} status={isUse ? 'broken' : 'normal'} />
+            <Status title={'状态：'} text={isBroken ? '断轨' : '良好'} isNormal={!isBroken} />
+            <Status title={'是否占用：'} text={isOccupied ? '占用' : '未占用'} isNormal={!isOccupied} />
           </View>
 
           {/* 温度 */}
@@ -114,12 +114,10 @@ const DeviceItem = ({index, item, navigation}: {index: number; item: IDevice; na
   );
 };
 
-const Status = ({text, status, title}: StatusProps) => (
+const Status = ({text, isNormal, title}: StatusProps) => (
   <View style={{flexDirection: 'row'}}>
     <Text style={AppStyles.grayText}>{title}</Text>
-    <Text style={[AppStyles.blackText, {color: status === 'normal' ? AppColor.green : AppColor.red, marginLeft: 5}]}>
-      {text}
-    </Text>
+    <Text style={[AppStyles.blackText, {color: isNormal ? AppColor.green : AppColor.red, marginLeft: 5}]}>{text}</Text>
   </View>
 );
 

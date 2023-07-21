@@ -3,10 +3,10 @@
  */
 
 import helper from './helper';
-import {IDevice, MqttDeviceData} from './types';
+import {IRailway, MqttDeviceData} from './types';
 
 // eslint-disable-next-line no-unused-vars
-type UpdateDataFunc = (data: IDevice) => void;
+type UpdateDataFunc = (data: IRailway) => void;
 
 export default class MqttClient {
   private static productKey = 'a1GjE0EIQfA';
@@ -51,14 +51,20 @@ export default class MqttClient {
       helper.writeLog('接收到数据：', topic, payload.toString());
       try {
         const mqttData = JSON.parse(payload.toString()) as MqttDeviceData;
-        updateData({
-          deviceId: mqttData.deviceName,
-          productKey: mqttData.productKey,
-          timestamp: mqttData.items.railway_state.value.timestamp,
-          status: mqttData.items.railway_state.value.broken_state,
-          temperature: mqttData.items.railway_state.value.temperature,
-          isUse: mqttData.items.railway_state.value.occupy_state === 'busy',
-        } as const as IDevice);
+        if (mqttData.items?.railway_data) {
+          const railwayData = mqttData.items.railway_data.value;
+          console.log('railwayData：', railwayData);
+
+          updateData({
+            railwayId: railwayData.railway_id,
+            timestamp: railwayData.timestamp,
+            isBroken: railwayData.is_broken,
+            isOccupied: railwayData.is_occupied,
+            temperature: railwayData.temperature,
+          } as const as IRailway);
+        } else {
+          console.log('不存在railway_data');
+        }
       } catch (e: unknown) {
         helper.writeLog('jason数据转换失败：', e, payload.toString());
       }

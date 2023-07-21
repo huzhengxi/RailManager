@@ -1,9 +1,8 @@
 import crypto from 'react-native-quick-crypto';
 import querystring from 'querystring';
 import axios, {AxiosInstance} from 'axios';
-import {AccessKey, AccessKeySecret, ProductKey} from '../localconfig/config';
+import {AccessKey, AccessKeySecret, ProductName, ProductKey} from '../localconfig/config';
 import {Identifier} from './types';
-import helper from './helper';
 
 interface IAliApiConfig {
   accessKeyId: string;
@@ -20,6 +19,13 @@ type Actions =
 
 export class AliIoTAPIClient {
   private static instance: AliIoTAPIClient | undefined;
+
+  static getInstance() {
+    if (!this.instance) {
+      this.instance = new AliIoTAPIClient();
+    }
+    return this.instance;
+  }
   private config: IAliApiConfig = {
     accessKeyId: AccessKey,
     accessKeySecret: AccessKeySecret,
@@ -32,13 +38,6 @@ export class AliIoTAPIClient {
     this.client = axios.create({
       baseURL: `https://iot.${this.config.regionId}.aliyuncs.com`,
     });
-  }
-
-  static getInstance() {
-    if (!this.instance) {
-      this.instance = new AliIoTAPIClient();
-    }
-    return this.instance;
   }
 
   async updateNickname(deviceId: string, nickName: string) {
@@ -56,26 +55,15 @@ export class AliIoTAPIClient {
     return response.data;
   }
 
-  async queryDeviceDetail(deviceId: string) {
-    return this.queryData(deviceId, 'QueryDeviceDetail');
-  }
-
   /**
    * 获取单个属性的历史数据
-   * @param deviceId
    * @param productKey
    * @param startTime
    * @param endTime
    * @param identifier
    */
-  async queryDeviceHistoryData(
-    deviceId: string,
-    startTime: number,
-    endTime: number,
-    identifier: Identifier,
-    pageSize = 50
-  ) {
-    return this.queryData(deviceId, 'QueryDevicePropertyData', {
+  async queryDeviceHistoryData(startTime: number, endTime: number, identifier: Identifier, pageSize = 50) {
+    return this.queryData('QueryDevicePropertyData', {
       Asc: 0,
       StartTime: startTime,
       EndTime: endTime,
@@ -84,9 +72,9 @@ export class AliIoTAPIClient {
     });
   }
 
-  private async queryData(deviceId: string, action: Actions, params: Record<string, unknown> = {}) {
+  private async queryData(action: Actions, params: Record<string, unknown> = {}) {
     const url = this.buildRequestURL({
-      DeviceName: deviceId,
+      DeviceName: ProductName,
       Action: action,
       ProductKey,
       ...params,
