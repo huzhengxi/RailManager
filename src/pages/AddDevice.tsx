@@ -1,24 +1,20 @@
 /**
  * Created by jason on 2022/9/13.
  */
+import {Modal} from '@ant-design/react-native';
+import {useNavigation} from '@react-navigation/native';
+import {useState} from 'react';
 import {Alert, View} from 'react-native';
 import {CameraScreen} from 'react-native-camera-kit';
+import {addDevice} from '../features/deviceListSlice';
 import {useTitle} from '../hooks/navigation-hooks';
 import {useAppDispatch} from '../store';
-import Helper from '../utils/helper';
-import {IQRCode, IRailway, RailWayEvent, RailwayData} from '../utils/types';
-import {useNavigation} from '@react-navigation/native';
 import {AliIoTAPIClient} from '../utils/aliIotApiClient';
 import {ONE_DAY} from '../utils/define';
-import {addDevice} from '../features/deviceListSlice';
-import {useState} from 'react';
-import {Loading} from '../utils/lib';
-import {Modal} from '@ant-design/react-native';
-<<<<<<< HEAD
-import {ProductKey} from '../localconfig/config';
-=======
+import Helper from '../utils/helper';
 import {parseResponseData} from '../utils/httpUtil';
->>>>>>> 26475f8e0b3dea458264950cdcbbe0dd3d156599
+import {Loading} from '../utils/lib';
+import {IQRCode, IRailway, RailwayData} from '../utils/types';
 
 let scanBusy = false;
 
@@ -35,15 +31,8 @@ export default function AddDevice() {
     scanBusy = true;
     Helper.writeLog('readCode:', event.nativeEvent.codeStringValue);
     try {
-<<<<<<< HEAD
-      const device = JSON.parse(event.nativeEvent.codeStringValue) as IDevice;
-      device.productKey = ProductKey;
-      console.log('device:', device);
-      if (device.deviceId) {
-=======
       const qrCode = JSON.parse(event.nativeEvent.codeStringValue) as IQRCode;
       if (qrCode.id) {
->>>>>>> 26475f8e0b3dea458264950cdcbbe0dd3d156599
         setLoading(true);
         const queryClient = AliIoTAPIClient.getInstance();
         const device: IRailway = {
@@ -84,22 +73,14 @@ export default function AddDevice() {
             {
               text: '确定',
               onPress: (...e: any) => {
-<<<<<<< HEAD
-                device.name = e?.[0] ?? device.deviceId;
-=======
                 device.name = e?.[0] ?? device.railwayId;
->>>>>>> 26475f8e0b3dea458264950cdcbbe0dd3d156599
                 dispatch(addDevice(device));
                 navigation.goBack();
               },
             },
           ],
           'default',
-<<<<<<< HEAD
-          device.name || device.deviceId
-=======
           device.name || device.railwayId
->>>>>>> 26475f8e0b3dea458264950cdcbbe0dd3d156599
         );
       } else {
         scanBusy = false;
