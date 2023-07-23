@@ -3,7 +3,19 @@
  */
 
 import {useNavigation} from '@react-navigation/native';
-import {AppState, FlatList, ListRenderItem, SafeAreaView, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
+import {
+  Alert,
+  AppState,
+  FlatList,
+  ListRenderItem,
+  PermissionsAndroid,
+  Platform,
+  SafeAreaView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 import {useTitle, useUpdateOptions} from '../hooks/navigation-hooks';
 import {useAppSelector} from '../store';
 import AppUtil from '../utils/AppUtil';
@@ -38,21 +50,36 @@ export default function Home() {
     });
   }, []);
 
+  const addDevice = () => {
+    console.log('Platform.OS：', Platform.OS);
+    if (Platform.OS === 'android') {
+      // PermissionsAndroid.check
+      PermissionsAndroid.request('android.permission.CAMERA', {
+        title: '相机权限申请',
+        message: '添加设备需要访问您的相机扫描二维码',
+        buttonPositive: '允许',
+        buttonNegative: '拒绝',
+      }).then((granted) => {
+        if (granted === PermissionsAndroid.RESULTS.GRANTED) {
+          // @ts-ignore
+          navigation.navigate('/AddDevice');
+        } else {
+          Alert.alert('', '您已拒绝相机权限，无法添加设备, 请前往设置中开启相机权限再添加');
+        }
+      });
+    } else {
+      // @ts-ignore
+      navigation.navigate('/AddDevice');
+    }
+  };
+
   useUpdateOptions(
     {
       headerRight: () => {
         if (devices.length === 0) {
           return null;
         }
-        return (
-          <HeaderRightButton
-            source={require('../../assets/add_green.png')}
-            onPress={() => {
-              // @ts-ignore
-              navigation.navigate('/AddDevice');
-            }}
-          />
-        );
+        return <HeaderRightButton source={require('../../assets/add_green.png')} onPress={addDevice} />;
       },
     },
     [devices.length]
@@ -64,14 +91,7 @@ export default function Home() {
   return (
     <SafeAreaView style={{flex: 1}}>
       {devices.length === 0 && (
-        <EmptyView
-          text={'添加设备'}
-          source={require('../../assets/add_green.png')}
-          onPress={() => {
-            // @ts-ignore
-            navigation.navigate('/AddDevice');
-          }}
-        />
+        <EmptyView text={'添加设备'} source={require('../../assets/add_green.png')} onPress={addDevice} />
       )}
       {devices.length > 0 && (
         <FlatList refreshing={false} onRefresh={refreshData} data={devices} renderItem={renderItem} />

@@ -1,7 +1,7 @@
 import crypto from 'react-native-quick-crypto';
 import querystring from 'querystring';
 import axios, {AxiosInstance} from 'axios';
-import {AccessKey, AccessKeySecret, ProductKey} from '../localconfig/config';
+import {AccessKey, AccessKeySecret, ProductKey, ProductName} from '../localconfig/config';
 import {Identifier} from './types';
 
 interface IAliApiConfig {
