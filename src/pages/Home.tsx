@@ -22,12 +22,7 @@ export default function Home() {
   const navigation = useNavigation();
   const devices = useAppSelector<IRailway[]>((state) => state.deviceReducer);
   const freshData = useCallback(() => {
-    MqttClient.connect((deviceData) => {
-      const oldDevice = devices.find((d) => d.railwayId === deviceData.railwayId);
-      if (oldDevice) {
-        sendNotification(deviceData, oldDevice);
-      }
-    });
+    MqttClient.connect((deviceData) => sendNotification(deviceData));
     refreshRecentlyDataFromServer();
   }, [devices]);
 
