@@ -48,7 +48,15 @@ export const refreshRecentlyDataFromServer = async () => {
   }
 };
 
-export function sendNotification(newDevice: IRailway, oldDevice: IRailway) {
+export function sendNotification(newDevice: IRailway, oldDevice: IRailway | undefined = undefined) {
+  if (!oldDevice) {
+    const deviceList = store.getState().deviceReducer as IRailway[];
+    oldDevice = deviceList.find((d) => d.railwayId === newDevice.railwayId);
+  }
+  if (!oldDevice) {
+    helper.writeLog('sendNotification>> oldDevice 不存在');
+    return;
+  }
   if (
     newDevice.isBroken !== oldDevice.isBroken ||
     newDevice.isOccupied !== oldDevice.isOccupied ||
