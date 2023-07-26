@@ -2,23 +2,35 @@
  * Created by jason on 2022/9/10.
  */
 import {useNavigation} from '@react-navigation/native';
-import {ColorValue, Dimensions, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
+import {throttle} from 'lodash';
+import {useCallback, useEffect} from 'react';
+import {
+  ActivityIndicator,
+  Alert,
+  ColorValue,
+  Dimensions,
+  NativeScrollEvent,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 import {LineChart} from 'react-native-chart-kit';
 import {useRouteParams, useTitle, useUpdateOptions} from '../hooks/navigation-hooks';
-import AppUtil from '../utils/AppUtil';
-import {useRailUsingHistory, useTemperatureHistory} from '../utils/httpUtil';
-import {EmptyView, HeaderRightButton, Loading, RoundView} from '../utils/lib';
-import {AppColor, AppStyles} from '../utils/styles';
-import {IRailway, ITempHistory} from '../utils/types';
-import {UsingHistory} from './RailUsingHistory';
-import {timeFormat} from '../utils/TimeUtil';
 import {useAppSelector} from '../store';
+import AppUtil from '../utils/AppUtil';
+import {timeFormat} from '../utils/TimeUtil';
+import {useRailUsingHistory, useTemperatureHistory} from '../utils/httpUtil';
+import {EmptyView, HeaderRightButton, RoundView} from '../utils/lib';
+import {AppColor, AppStyles} from '../utils/styles';
+import {IRailway} from '../utils/types';
+import {UsingHistory} from './RailUsingHistory';
 
 const screenWidth = Dimensions.get('window').width;
 
 export default function Detail() {
   let device: IRailway = useRouteParams(['device']).device as IRailway;
-  const {data: temperatureHistoryData = [], loading: tempHisLoading} = useTemperatureHistory(device);
   const {data: railUsingHistoryData = [], loading: railUsingLoading} = useRailUsingHistory(device, 20);
   const navigation = useNavigation();
   const devices = useAppSelector<IRailway[]>((state) => state.deviceReducer);
@@ -52,7 +64,7 @@ export default function Detail() {
       <DeviceStatus device={device} />
 
       {/* 温度历史 */}
-      <TempHistory loading={tempHisLoading} data={temperatureHistoryData} />
+      <TempHistory device={device} />
 
       {/*  7天轨道占用历史 */}
       <TouchableOpacity
@@ -69,7 +81,6 @@ export default function Detail() {
 
 const DeviceStatus = ({device}: {device: IRailway}) => {
   const {isBroken, isOccupied, temperature} = device;
-  console.log('temperature:', device);
   return (
     <RoundView style={{padding: 15}}>
       <View style={[AppStyles.row, {justifyContent: 'space-between'}]}>
@@ -106,9 +117,15 @@ const Item = ({
   </View>
 );
 
-const TempHistory = ({data = [], loading}: {data: ITempHistory[]; loading: boolean}) => {
+const TempHistory = ({device}: {device: IRailway}) => {
+  const {data, loading, hasNext, refreshData} = useTemperatureHistory(device);
+  useEffect(() => {
+    if (data.length < screenWidth / 80 && hasNext) {
+      refreshData();
+    }
+  }, [data.length, hasNext, refreshData]);
   const chartData = {
-    labels: data.map(({timestamp}) => timeFormat(timestamp, 'M/DD')) || [],
+    labels: data.map(({timestamp}) => timeFormat(timestamp, 'M/DD HH:00')) || [],
     datasets: [
       {
         data: data.map(({temp}) => temp) || [],
@@ -126,16 +143,67 @@ const TempHistory = ({data = [], loading}: {data: ITempHistory[]; loading: boole
     barPercentage: 0.5,
     useShadowColorFromDataset: true, // optional
   };
+  const handleScroll = throttle(
+    useCallback(
+      ({layoutMeasurement, contentOffset, contentSize}: NativeScrollEvent) => {
+        const paddingToRight = 20;
+        if (layoutMeasurement.width + contentOffset.x >= contentSize.width - paddingToRight) {
+          if (hasNext) {
+            refreshData(true);
+          }
+        }
+      },
+      [hasNext, refreshData]
+    ),
+    1000
+  );
   return (
     <View style={{width: '100%'}}>
       <Text style={[AppStyles.grayText, {marginTop: 20, marginLeft: 20}]}>温度历史</Text>
-      <RoundView style={{padding: 15, minHeight: 120}}>
-        {loading && <Loading />}
-        {!loading && data.length === 0 && <EmptyView text={'暂无数据'} />}
-        {!loading && data.length > 0 && (
-          <LineChart data={chartData} width={screenWidth - 75} height={200} chartConfig={chartConfig} />
-        )}
-      </RoundView>
+      <ScrollView
+        horizontal
+        scrollEventThrottle={400}
+        // onScroll={({nativeEvent}) => handleScroll(nativeEvent)}
+        onScrollEndDrag={({nativeEvent}) => handleScroll(nativeEvent)}
+        style={{
+          marginHorizontal: 20,
+          marginTop: 15,
+          borderRadius: 8,
+          backgroundColor: '#ffffff',
+          paddingLeft: 15,
+        }}>
+        <RoundView
+          style={{
+            padding: 15,
+            minHeight: 120,
+            marginLeft: 0,
+            paddingLeft: 0,
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}>
+          {/* {loading && <Loading />} */}
+          {!loading && data.length === 0 && <EmptyView text={'暂无数据'} />}
+          {data.length > 0 && (
+            <LineChart
+              onDataPointClick={() => {
+                Alert.alert('', 'onDataPointClick');
+              }}
+              data={chartData}
+              bezier
+              width={data.length * 80}
+              height={200}
+              chartConfig={chartConfig}
+              // verticalLabelRotation={30}
+            />
+          )}
+          {hasNext && loading && (
+            <View style={{width: data.length === 0 ? screenWidth - 60 : 20, paddingRight: 10}}>
+              <ActivityIndicator size='small' color='#0000ff' />
+            </View>
+          )}
+        </RoundView>
+      </ScrollView>
     </View>
   );
 };

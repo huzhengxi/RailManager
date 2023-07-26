@@ -19,7 +19,7 @@
     "@typescript-eslint/ban-ts-comment": "off",
     "no-empty": "off",
     "no-nested-ternary": "warn",
-    "no-shadow": "warn",
+    "no-shadow": "off",
     "array-callback-return": "off",
     "no-unused-vars": "warn",
     "prefer-const": "warn",
@@ -28,7 +28,8 @@
     "react/no-unused-state": "warn",
     "react/no-children-prop": "off",
     "@typescript-eslint/no-require-imports": "off",
-    "react/no-unused-prop-types": "warn"
+    "react/no-unused-prop-types": "warn",
+    "@typescript-eslint/no-shadow": "off"
   },
   "globals": {
     "__DEV__": true

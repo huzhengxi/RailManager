@@ -53,40 +53,49 @@ export const useNotificationList = (devices?: IRailway[]) => {
   };
 };
 
-export const useTemperatureHistory = (device: IRailway) => {
+export const useTemperatureHistory = (device: IRailway, firstPageSize = 50) => {
   const [loading, setLoading] = useState(false);
   const [list, setList] = useState<ITempHistory[]>([]);
   const now = useRef(Date.now());
   const [endTime, setEndTime] = useState(now.current);
   const [startTime, _] = useState(now.current - ONE_DAY * 7);
+  const [hasNext, setHasNext] = useState(true);
 
-  useEffect(() => {
-    setLoading(true);
-    const client = AliIoTAPIClient.getInstance();
-    try {
+  const refreshData = useCallback(
+    (loading = false, pageSize = 50) => {
+      if (!hasNext) return;
+      if (loading) setLoading(true);
+      const client = AliIoTAPIClient.getInstance();
       client
-        .queryDeviceHistoryData(startTime, endTime, 'railway_data')
+        .queryDeviceHistoryData(startTime, endTime, 'railway_data', pageSize)
         .then((data) => {
           const {history, nextTime, hasNext} = parseTemperatureData(device, list, data);
+          console.log('useTemperatureHistory:', history, nextTime, hasNext);
           setList([...history]);
+          setHasNext(hasNext);
           if (hasNext && nextTime) {
             setEndTime(nextTime);
-          } else {
-            setLoading(false);
           }
         })
         .catch((error) => {
-          setLoading(false);
+          setList([]);
           helper.writeLog('获取温度历史数据失败：', error);
+        })
+        .finally(() => {
+          setLoading(false);
         });
-    } catch (e) {
-      setList([]);
-      setLoading(false);
-    }
-  }, [endTime]);
+    },
+    [list, endTime, hasNext]
+  );
+
+  useEffect(() => {
+    refreshData(true, firstPageSize);
+  }, []);
   return {
     loading,
     data: list,
+    hasNext,
+    refreshData,
   };
 };
 
@@ -111,7 +120,6 @@ export const useRailUsingHistory = (device: IRailway, firstPageSize = 50) => {
         .queryDeviceHistoryData(startTime, endTime, 'train_data', pageSize)
         .then((data) => {
           const {history, hasNext, nextTime} = parseRailUsingData(device, data, list);
-          console.log('his', history.length, hasNext, nextTime);
           setList([...history]);
           setHasNext(hasNext);
           if (hasNext && nextTime) {
@@ -146,10 +154,11 @@ function parseTemperatureData(device: IRailway, prevList: ITempHistory[], data: 
     history
       .filter(({railway_id}) => railway_id === device.railwayId)
       .filter(({timestamp, temperature}) => timeValid(timestamp) && valueValid(temperature))
-      .sort((a, b) => a.timestamp - b.timestamp)
+      .sort((a, b) => b.timestamp - a.timestamp)
       .map((railwayData) => {
-        const newDate = timeFormat(railwayData.timestamp, 'M/DD');
+        const newDate = timeFormat(railwayData.timestamp, 'M/DD HH:00');
         const newDateIndex = parsedData.findIndex(({date}) => newDate === date);
+        console.log('xx:', newDate, newDateIndex, parsedData);
         if (newDateIndex !== -1) {
           // 如果已经存在的话，取最大值
           parsedData[newDateIndex] = {
@@ -171,7 +180,7 @@ function parseTemperatureData(device: IRailway, prevList: ITempHistory[], data: 
   return {
     hasNext,
     nextTime,
-    history: parsedData.sort((a, b) => a.timestamp - b.timestamp),
+    history: parsedData.sort((a, b) => b.timestamp - a.timestamp),
   };
 }
 
