@@ -3,7 +3,7 @@
  */
 import {useNavigation} from '@react-navigation/native';
 import {throttle} from 'lodash';
-import {useCallback, useEffect} from 'react';
+import {useCallback, useEffect, useState} from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -119,6 +119,7 @@ const Item = ({
 
 const TempHistory = ({device}: {device: IRailway}) => {
   const {data, loading, hasNext, refreshData} = useTemperatureHistory(device);
+  const [pulling, setPulling] = useState(false);
   useEffect(() => {
     if (data.length < screenWidth / 80 && hasNext) {
       refreshData();
@@ -143,13 +144,16 @@ const TempHistory = ({device}: {device: IRailway}) => {
     barPercentage: 0.5,
     useShadowColorFromDataset: true, // optional
   };
-  const handleScroll = throttle(
+  const handleDrag = throttle(
     useCallback(
-      ({layoutMeasurement, contentOffset, contentSize}: NativeScrollEvent) => {
+      ({layoutMeasurement, contentOffset, contentSize}: NativeScrollEvent, begin: boolean) => {
         const paddingToRight = 20;
         if (layoutMeasurement.width + contentOffset.x >= contentSize.width - paddingToRight) {
           if (hasNext) {
-            refreshData(true);
+            if (!begin) {
+              refreshData(true);
+            }
+            setPulling(begin);
           }
         }
       },
@@ -164,7 +168,8 @@ const TempHistory = ({device}: {device: IRailway}) => {
         horizontal
         scrollEventThrottle={400}
         // onScroll={({nativeEvent}) => handleScroll(nativeEvent)}
-        onScrollEndDrag={({nativeEvent}) => handleScroll(nativeEvent)}
+        onScrollBeginDrag={({nativeEvent}) => handleDrag(nativeEvent, true)}
+        onScrollEndDrag={({nativeEvent}) => handleDrag(nativeEvent, false)}
         style={{
           marginHorizontal: 20,
           marginTop: 15,
@@ -197,8 +202,8 @@ const TempHistory = ({device}: {device: IRailway}) => {
               // verticalLabelRotation={30}
             />
           )}
-          {hasNext && loading && (
-            <View style={{width: data.length === 0 ? screenWidth - 60 : 20, paddingRight: 10}}>
+          {hasNext && (loading || pulling) && (
+            <View style={{flex: 1, paddingHorizontal: 10}}>
               <ActivityIndicator size='small' color='#0000ff' />
             </View>
           )}
