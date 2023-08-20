@@ -79,6 +79,7 @@ export const useTemperatureHistory = (device: IRailway, firstPageSize = 50) => {
         })
         .catch((error) => {
           setList([]);
+          setHasNext(false);
           helper.writeLog('获取温度历史数据失败：', error);
         })
         .finally(() => {
@@ -128,6 +129,7 @@ export const useRailUsingHistory = (device: IRailway, firstPageSize = 50) => {
         })
         .catch((error) => {
           helper.writeLog('获取数据失败', error);
+          setHasNext(false);
         })
         .finally(() => {
           setLoading(false);

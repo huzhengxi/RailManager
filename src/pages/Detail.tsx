@@ -187,7 +187,6 @@ const TempHistory = ({device}: {device: IRailway}) => {
             alignItems: 'center',
             justifyContent: 'center',
           }}>
-          {/* {loading && <Loading />} */}
           {!loading && data.length === 0 && <EmptyView text={'暂无数据'} />}
           {data.length > 0 && (
             <LineChart
