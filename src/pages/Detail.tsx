@@ -118,13 +118,9 @@ const Item = ({
 );
 
 const TempHistory = ({device}: {device: IRailway}) => {
-  const {data, loading, hasNext, refreshData} = useTemperatureHistory(device);
+  let {data, loading, hasNext, refreshData} = useTemperatureHistory(device, 200);
   const [pulling, setPulling] = useState(false);
-  useEffect(() => {
-    if (data.length < screenWidth / 80 && hasNext) {
-      refreshData();
-    }
-  }, [data.length, hasNext, refreshData]);
+
   const chartData = {
     labels: data.map(({timestamp}) => timeFormat(timestamp, 'M/DD HH:00')) || [],
     datasets: [
@@ -187,7 +183,11 @@ const TempHistory = ({device}: {device: IRailway}) => {
             alignItems: 'center',
             justifyContent: 'center',
           }}>
-          {!loading && data.length === 0 && <EmptyView text={'暂无数据'} />}
+          {!loading && data.length === 0 && (
+            <View style={{width: screenWidth - 60}}>
+              <EmptyView text={'暂无数据'} />
+            </View>
+          )}
           {data.length > 0 && (
             <LineChart
               onDataPointClick={() => {
@@ -195,7 +195,7 @@ const TempHistory = ({device}: {device: IRailway}) => {
               }}
               data={chartData}
               bezier
-              width={data.length * 80}
+              width={data.length * 100}
               height={200}
               chartConfig={chartConfig}
               // verticalLabelRotation={30}

@@ -32,10 +32,11 @@ export default function Notification() {
   }, []);
 
   return (
-    <SafeAreaView style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
+    <SafeAreaView style={{flex: 1, justifyContent: 'center', alignItems: 'center', width: '100%'}}>
       {data.length === 0 && !loading && <EmptyView text={'暂无通知'} />}
       {(data.length > 0 || loading) && (
         <FlatList
+          style={{width: '100%'}}
           refreshing={loading}
           onRefresh={refreshData}
           data={data}

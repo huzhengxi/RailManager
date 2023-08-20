@@ -151,6 +151,7 @@ export const useRailUsingHistory = (device: IRailway, firstPageSize = 50) => {
 
 function parseTemperatureData(device: IRailway, prevList: ITempHistory[], data: any): IHistory<ITempHistory> {
   const {history, nextTime, hasNext} = parseResponseData<RailwayData>(data);
+  console.log('parseTemperatureData:', history);
   const parsedData: ITempHistory[] = [...prevList];
   try {
     history
