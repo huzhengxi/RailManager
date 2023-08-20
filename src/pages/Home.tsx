@@ -112,7 +112,7 @@ const DeviceItem = ({index, item, navigation}: {index: number; item: IRailway; n
           {/* 名称和更新时间 */}
           <View style={[AppStyles.row, {justifyContent: 'space-between', width: '100%'}]}>
             <Text style={AppStyles.title}>{name}</Text>
-            <Text style={AppStyles.grayText}>{timestamp ? timeFormat(timestamp, 'M/DD hh:mm') : '--'}</Text>
+            <Text style={AppStyles.grayText}>{timestamp ? timeFormat(timestamp, 'M/DD HH:mm') : '--'}</Text>
           </View>
 
           {/* 各种状态 */}
@@ -144,7 +144,8 @@ const Temperature = ({temp}: {temp: number | undefined}) => {
   if (temp === undefined) {
     return null;
   }
-  let width = Math.round(((temp - MIN_TEMP) / RANGE) * 100);
+  const distance = temp - MIN_TEMP;
+  let width = Math.round(((distance > RANGE ? RANGE : distance) / RANGE) * 100);
   if (width < 15) {
     width = 10;
   }

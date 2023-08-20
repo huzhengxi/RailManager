@@ -4,7 +4,9 @@
 import dayjs from 'dayjs';
 
 export const timeFormat = (timestamp: number, format: string): string => {
-  return dayjs(`${timestamp}`.length < 13 ? timestamp * 1000 : timestamp).format(format);
+  const formatted = dayjs(`${timestamp}`.length < 13 ? timestamp * 1000 : timestamp).format(format);
+  // console.log(`timeFormat, timestamp:${timestamp}, formatted:${formatted}`);
+  return formatted;
 };
 
 export const timeValid = (timestamp: number): boolean => {
