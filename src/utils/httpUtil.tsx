@@ -32,7 +32,7 @@ export const useNotificationList = (devices?: IRailway[]) => {
       const startTime = endTime - ONE_DAY * 2;
       const client = AliIoTAPIClient.getInstance();
       client
-        .queryDeviceHistoryData(startTime, endTime, 'railway_event')
+        .queryDeviceHistoryData(startTime, endTime, 'railway_event', 200)
         .then((data) => {
           setList(parseNotificationData(devices, data, clearData ? [] : list).history);
         })
