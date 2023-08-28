@@ -100,7 +100,7 @@ const RailUsingHistoryItem = ({
         {type === 'date' && <Text style={[AppStyles.blackText, {fontSize: 15}]}>{timeFormat(timestamp, 'M/DD')}</Text>}
         {type !== 'date' && (
           <>
-            <Text style={AppStyles.grayText}>{timeFormat(timestamp, 'H:mm')}</Text>
+            <Text style={AppStyles.grayText}>{timeFormat(timestamp, 'H:mm:ss')}</Text>
             <Text style={[AppStyles.blackText, {marginTop: 5}]}>{description}</Text>
           </>
         )}

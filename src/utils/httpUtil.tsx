@@ -73,6 +73,9 @@ export const useTemperatureHistory = (device: IRailway, firstPageSize = 50) => {
           console.log('useTemperatureHistory:', history, nextTime, hasNext);
           setList([...history]);
           setHasNext(hasNext);
+          if (!hasNext) {
+            setLoading(false);
+          }
           if (hasNext && nextTime) {
             setEndTime(nextTime);
           }
@@ -80,10 +83,8 @@ export const useTemperatureHistory = (device: IRailway, firstPageSize = 50) => {
         .catch((error) => {
           setList([]);
           setHasNext(false);
-          helper.writeLog('获取温度历史数据失败：', error);
-        })
-        .finally(() => {
           setLoading(false);
+          helper.writeLog('获取温度历史数据失败：', error);
         });
     },
     [list, endTime, hasNext]
@@ -91,7 +92,7 @@ export const useTemperatureHistory = (device: IRailway, firstPageSize = 50) => {
 
   useEffect(() => {
     refreshData(true, firstPageSize);
-  }, []);
+  }, [endTime]);
   return {
     loading,
     data: list,
@@ -183,7 +184,7 @@ function parseTemperatureData(device: IRailway, prevList: ITempHistory[], data: 
   return {
     hasNext,
     nextTime,
-    history: parsedData.sort((a, b) => b.timestamp - a.timestamp),
+    history: parsedData.sort((a, b) => a.timestamp - b.timestamp),
   };
 }
 
@@ -208,7 +209,8 @@ function parseRailUsingData(device: IRailway, data: any, prevList: IRailUsingHis
       type: 'history',
       date: newDate,
       using: timeKey === 'enter_timestamp',
-      description: timeKey === 'enter_timestamp' ? `轴数为 ${trainData.axis_number} 的列车进站` : '列车驶离，轨道空闲',
+      description:
+        timeKey === 'enter_timestamp' ? '列车进站，轨道占用' : `列车出站，轴数为 ${trainData.axis_number}，轨道空闲`,
     });
   };
   try {

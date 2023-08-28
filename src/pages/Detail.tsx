@@ -2,30 +2,18 @@
  * Created by jason on 2022/9/10.
  */
 import {useNavigation} from '@react-navigation/native';
-import {throttle} from 'lodash';
-import {useCallback, useEffect, useState} from 'react';
-import {
-  ActivityIndicator,
-  Alert,
-  ColorValue,
-  Dimensions,
-  NativeScrollEvent,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-} from 'react-native';
+import {Alert, ColorValue, Dimensions, StyleSheet, Text, TouchableOpacity, View, ScrollView} from 'react-native';
 import {LineChart} from 'react-native-chart-kit';
 import {useRouteParams, useTitle, useUpdateOptions} from '../hooks/navigation-hooks';
 import {useAppSelector} from '../store';
 import AppUtil from '../utils/AppUtil';
 import {timeFormat} from '../utils/TimeUtil';
 import {useRailUsingHistory, useTemperatureHistory} from '../utils/httpUtil';
-import {EmptyView, HeaderRightButton, RoundView} from '../utils/lib';
+import {EmptyView, HeaderRightButton, Loading, RoundView} from '../utils/lib';
 import {AppColor, AppStyles} from '../utils/styles';
 import {IRailway} from '../utils/types';
 import {UsingHistory} from './RailUsingHistory';
+import {useEffect, useRef} from 'react';
 
 const screenWidth = Dimensions.get('window').width;
 
@@ -118,8 +106,7 @@ const Item = ({
 );
 
 const TempHistory = ({device}: {device: IRailway}) => {
-  let {data, loading, hasNext, refreshData} = useTemperatureHistory(device, 200);
-  const [pulling, setPulling] = useState(false);
+  let {data, loading} = useTemperatureHistory(device, 200);
 
   const chartData = {
     labels: data.map(({timestamp}) => timeFormat(timestamp, 'M/DD HH:00')) || [],
@@ -140,32 +127,20 @@ const TempHistory = ({device}: {device: IRailway}) => {
     barPercentage: 0.5,
     useShadowColorFromDataset: true, // optional
   };
-  const handleDrag = throttle(
-    useCallback(
-      ({layoutMeasurement, contentOffset, contentSize}: NativeScrollEvent, begin: boolean) => {
-        const paddingToRight = 20;
-        if (layoutMeasurement.width + contentOffset.x >= contentSize.width - paddingToRight) {
-          if (hasNext) {
-            if (!begin) {
-              refreshData(true);
-            }
-            setPulling(begin);
-          }
-        }
-      },
-      [hasNext, refreshData]
-    ),
-    1000
-  );
+  const scrollViewRef = useRef<ScrollView>(null);
+  useEffect(() => {
+    scrollViewRef?.current?.scrollToEnd?.({animated: false});
+  }, []);
+
   return (
     <View style={{width: '100%'}}>
       <Text style={[AppStyles.grayText, {marginTop: 20, marginLeft: 20}]}>温度历史</Text>
       <ScrollView
         horizontal
-        scrollEventThrottle={400}
-        // onScroll={({nativeEvent}) => handleScroll(nativeEvent)}
-        onScrollBeginDrag={({nativeEvent}) => handleDrag(nativeEvent, true)}
-        onScrollEndDrag={({nativeEvent}) => handleDrag(nativeEvent, false)}
+        ref={scrollViewRef}
+        onContentSizeChange={() => {
+          scrollViewRef?.current?.scrollToEnd?.({animated: true});
+        }}
         style={{
           marginHorizontal: 20,
           marginTop: 15,
@@ -183,28 +158,26 @@ const TempHistory = ({device}: {device: IRailway}) => {
             alignItems: 'center',
             justifyContent: 'center',
           }}>
+          {loading && (
+            <View style={{width: screenWidth - 60}}>
+              <Loading />
+            </View>
+          )}
           {!loading && data.length === 0 && (
             <View style={{width: screenWidth - 60}}>
               <EmptyView text={'暂无数据'} />
             </View>
           )}
-          {data.length > 0 && (
+          {!loading && data.length > 0 && (
             <LineChart
               onDataPointClick={() => {
                 Alert.alert('', 'onDataPointClick');
               }}
               data={chartData}
-              bezier
               width={data.length * 100}
               height={200}
               chartConfig={chartConfig}
-              // verticalLabelRotation={30}
             />
-          )}
-          {hasNext && (loading || pulling) && (
-            <View style={{flex: 1, paddingHorizontal: 10}}>
-              <ActivityIndicator size='small' color='#0000ff' />
-            </View>
           )}
         </RoundView>
       </ScrollView>
