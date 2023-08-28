@@ -169,15 +169,7 @@ const TempHistory = ({device}: {device: IRailway}) => {
             </View>
           )}
           {!loading && data.length > 0 && (
-            <LineChart
-              onDataPointClick={() => {
-                Alert.alert('', 'onDataPointClick');
-              }}
-              data={chartData}
-              width={data.length * 100}
-              height={200}
-              chartConfig={chartConfig}
-            />
+            <LineChart data={chartData} width={data.length * 100} height={200} chartConfig={chartConfig} />
           )}
         </RoundView>
       </ScrollView>
