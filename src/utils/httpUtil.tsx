@@ -58,7 +58,7 @@ export const useTemperatureHistory = (device: IRailway, firstPageSize = 50) => {
   const [list, setList] = useState<ITempHistory[]>([]);
   const now = useRef(Date.now());
   const [endTime, setEndTime] = useState(now.current);
-  const [startTime, _] = useState(now.current - ONE_DAY * 7);
+  const [startTime, _] = useState(now.current - ONE_DAY);
   const [hasNext, setHasNext] = useState(true);
 
   const refreshData = useCallback(
